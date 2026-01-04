@@ -415,7 +415,7 @@ st.sidebar.markdown("### Back Pressure Ratio")
 st.sidebar.latex(r"\text{Ratio} = \frac{p_b}{p_0}")
 st.sidebar.markdown("""
 <div style="color: #9ca3af; font-size: 1rem; margin-bottom: 12px; line-height: 1.4;">
-    where $p_b$ is the back pressure (ambient) and $p_0$ is the stagnation pressure (chamber).
+    where <i>p<sub>b</sub></i> is the back pressure (ambient) and <i>p<sub>0</sub></i> is the stagnation pressure (chamber).
 </div>
 """, unsafe_allow_html=True)
 
