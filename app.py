@@ -333,6 +333,8 @@ geometry_type = st.sidebar.radio(
     index=0 if st.session_state.geometry_type == 'rocketisp' else 1,
     key="geometry_type_selector"
 )
+# Check if geometry type changed BEFORE updating session state
+geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
 st.session_state.geometry_type = geometry_type
 
 # Reset to default button
@@ -772,7 +774,6 @@ else:
         geometry_changed = False
 
 geometry_changed_check = geometry_changed if geometry_type == 'rocketisp' else parabolic_changed
-geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
 
 if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.session_state) and not validation_errors:
     try:
