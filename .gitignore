@@ -1,44 +1,47 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
-*.pyc
+*.py[cod]
+*$py.class
+
+# Distribution / Builds
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
 wheels/
+share/python-wheels/
 *.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Virtual environments
-.venv/
-venv/
+# Virtual Environments
+.env
+.venv
 env/
+venv/
 ENV/
+env.bak/
+venv.bak/
 
-# IDE
+# IDEs
 .idea/
 .vscode/
 *.swp
 *.swo
-*~
 
-<<<<<<< HEAD
-=======
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
->>>>>>> ca43ad2 (Initial commit: Quasi-1D Nozzle Flow Simulator with modern Streamlit UI)
-# OS files
+# MacOS
 .DS_Store
-Thumbs.db
 
-# Environment variables
-.env
-.env.local
-
-<<<<<<< HEAD
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
 
-=======
-# Lock files (optional - uncomment if you want to ignore)
-# uv.lock
->>>>>>> ca43ad2 (Initial commit: Quasi-1D Nozzle Flow Simulator with modern Streamlit UI)
+# Jupyter
+.ipynb_checkpoints

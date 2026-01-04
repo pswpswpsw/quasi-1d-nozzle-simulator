@@ -395,6 +395,11 @@ st.sidebar.markdown("""
             <div>
                 <p style="color: #d1d5db; font-size: 1rem; margin: 0; font-weight: 500;">Prof. Shaowu Pan</p>
                 <p style="color: #6b7280; font-size: 1rem; margin: 0; line-height: 1.4;">MANE, Rensselaer Polytechnic Institute<br>Troy, NY 12180, USA</p>
+                <div style="margin-top: 8px;">
+                    <a href="mailto:pans2@rpi.edu" style="text-decoration: none; color: #9ca3af; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#9ca3af'">
+                        <span>📧</span> <span>Feedback</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
