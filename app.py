@@ -411,6 +411,14 @@ if 'log_p_ratio' not in st.session_state:
 
 st.sidebar.markdown("### Back Pressure Ratio")
 
+# Educational context for the ratio
+st.sidebar.latex(r"\text{Ratio} = \frac{p_b}{p_0}")
+st.sidebar.markdown("""
+<div style="color: #9ca3af; font-size: 1rem; margin-bottom: 12px; line-height: 1.4;">
+    where $p_b$ is the back pressure (ambient) and $p_0$ is the stagnation pressure (chamber).
+</div>
+""", unsafe_allow_html=True)
+
 # Slider with log scale labels
 st.sidebar.markdown("""
     <div style="display: flex; justify-content: space-between; font-size: 1rem; color: #9ca3af; margin-bottom: -10px;">
