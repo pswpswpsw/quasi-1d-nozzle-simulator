@@ -34,7 +34,7 @@ uv sync
 
 Or using `pip`:
 ```bash
-pip install streamlit plotly numpy scipy rocketisp
+pip install -r requirements.txt
 ```
 
 ## 🎮 Usage
@@ -68,8 +68,21 @@ The app will open in your browser at `http://localhost:8501`.
 ├── app.py          # Main Streamlit application
 ├── nozzle.py       # Nozzle class with flow simulation logic
 ├── geometry.py     # Geometry helper functions for nozzle area profile
+├── requirements.txt # Python dependencies
 └── README.md       # This file
 ```
+
+## 🚀 Deployment
+
+### Streamlit Cloud
+
+1. Fork this repository or push it to your GitHub account
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Click "New app" and select your repository
+4. Set the main file path to `app.py`
+5. Streamlit Cloud will automatically detect `requirements.txt` and install dependencies
+
+The app will be available at `https://your-app-name.streamlit.app`
 
 ## 🔬 Technical Details
 
