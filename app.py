@@ -277,9 +277,9 @@ DEFAULT_PRESET = {
 if 'geometry_params' not in st.session_state:
     st.session_state.geometry_params = DEFAULT_PRESET.copy()
 
-# Initialize geometry type
+# Initialize geometry type - default to Simple Parabolic
 if 'geometry_type' not in st.session_state:
-    st.session_state.geometry_type = 'SSME'
+    st.session_state.geometry_type = 'Simple Parabolic'
 
 # Initialize parabolic geometry parameters
 if 'parabolic_params' not in st.session_state:
@@ -334,7 +334,9 @@ geometry_type = st.sidebar.radio(
     key="geometry_type_selector"
 )
 # Map display name to internal value
-geometry_type = 'SSME' if geometry_type == 'SSME Geometry' else geometry_type
+if geometry_type == 'SSME Geometry':
+    geometry_type = 'SSME'
+# Keep 'Simple Parabolic' as is for internal use
 # Check if geometry type changed BEFORE updating session state
 geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
 st.session_state.geometry_type = geometry_type
@@ -833,7 +835,8 @@ st.sidebar.markdown("### Flow Parameters")
 # Use log10 space: from log10(1e-7) = -7 to log10(1) = 0
 log_min = -7.0
 log_max = 0.0
-log_default = np.log10(0.972)  # Default value in log space
+# Default: 0.8 for normal shock in expansion (works for both geometries)
+log_default = np.log10(0.8)  # Default value in log space - normal shock in expansion
 
 log_p_ratio = st.sidebar.slider(
     r"Back Pressure Ratio ($p_b/p_0$) - Log Scale",
