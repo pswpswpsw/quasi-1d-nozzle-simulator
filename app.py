@@ -279,7 +279,7 @@ if 'geometry_params' not in st.session_state:
 
 # Initialize geometry type
 if 'geometry_type' not in st.session_state:
-    st.session_state.geometry_type = 'rocketisp'
+    st.session_state.geometry_type = 'SSME'
 
 # Initialize parabolic geometry parameters
 if 'parabolic_params' not in st.session_state:
@@ -329,17 +329,19 @@ st.sidebar.markdown("### Nozzle Geometry")
 # Geometry type selector
 geometry_type = st.sidebar.radio(
     "Geometry Type",
-    ["rocketisp", "Simple Parabolic"],
-    index=0 if st.session_state.geometry_type == 'rocketisp' else 1,
+    ["SSME Geometry", "Simple Parabolic"],
+    index=0 if st.session_state.geometry_type == 'SSME' else 1,
     key="geometry_type_selector"
 )
+# Map display name to internal value
+geometry_type = 'SSME' if geometry_type == 'SSME Geometry' else geometry_type
 # Check if geometry type changed BEFORE updating session state
 geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
 st.session_state.geometry_type = geometry_type
 
 # Reset to default button
 if st.sidebar.button("🔄 Reset to Default", use_container_width=True, type="secondary"):
-    if geometry_type == 'rocketisp':
+    if geometry_type == 'SSME':
         st.session_state.geometry_params = DEFAULT_PRESET.copy()
     else:
         st.session_state.parabolic_params = {
@@ -354,7 +356,7 @@ if st.sidebar.button("🔄 Reset to Default", use_container_width=True, type="se
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
 # Show parameters based on geometry type
-if geometry_type == 'rocketisp':
+if geometry_type == 'SSME':
     # Chamber Geometry Group
     st.sidebar.markdown("""
         <div class="param-group">
@@ -752,7 +754,7 @@ def validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, Rch
     return errors
 
 # Validate parameters
-if geometry_type == 'rocketisp':
+if geometry_type == 'SSME':
     validation_errors = validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, RchmConv, cham_conv_deg, LchmOvrDt)
     if validation_errors:
         st.sidebar.error("**Validation Errors:**")
@@ -763,7 +765,7 @@ else:
 
 # Recreate geometry and nozzle if parameters changed or if nozzle doesn't exist
 # Initialize variables if not set
-if geometry_type == 'rocketisp':
+if geometry_type == 'SSME':
     if 'geometry_changed' not in locals():
         geometry_changed = False
     parabolic_changed = False
@@ -773,12 +775,12 @@ else:
     if 'geometry_changed' not in locals():
         geometry_changed = False
 
-geometry_changed_check = geometry_changed if geometry_type == 'rocketisp' else parabolic_changed
+geometry_changed_check = geometry_changed if geometry_type == 'SSME' else parabolic_changed
 
 if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.session_state) and not validation_errors:
     try:
         start_time = time.time()
-        if geometry_type == 'rocketisp':
+        if geometry_type == 'SSME':
             # SSME Geometry from https://rocketisp.readthedocs.io/en/latest/models.html#geometry
             G = Geometry(
                 Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
