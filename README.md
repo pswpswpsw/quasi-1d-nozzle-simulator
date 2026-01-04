@@ -43,13 +43,7 @@ pip install -r requirements.txt
 
 From the project root:
 ```bash
-cd streamlit_app
 uv run streamlit run app.py
-```
-
-Or:
-```bash
-uv run streamlit run streamlit_app/app.py
 ```
 
 The app will open in your browser at `http://localhost:8501`.
@@ -62,11 +56,10 @@ Open `nozzle_subsonic_v2_interactive.ipynb` in Jupyter Lab/Notebook for an inter
 
 ```
 .
-├── streamlit_app/          # Streamlit web application
-│   ├── app.py             # Main application file
-│   ├── nozzle.py          # Nozzle class with flow simulation
-│   ├── geometry.py        # Geometry helper functions
-│   └── README.md          # App-specific documentation
+├── app.py             # Main application file
+├── nozzle.py          # Nozzle class with flow simulation
+├── geometry.py        # Geometry helper functions
+├── test_app.py        # Test suite
 ├── nozzle_subsonic_v2_interactive.ipynb  # Interactive Jupyter notebook
 ├── pyproject.toml         # Project dependencies
 └── README.md              # This file
@@ -74,12 +67,13 @@ Open `nozzle_subsonic_v2_interactive.ipynb` in Jupyter Lab/Notebook for an inter
 
 ## 🎨 UI Features
 
-- **Modern Dark Theme**: Professional ChatGPT-style interface
-- **Wider Plot Layout**: Plot takes 70-75% of screen width for better visibility
+- **Modern Glassmorphism UI**: Semi-transparent dark theme (`#1a1a1a`) with glass effects
+- **Mobile Friendly**: Responsive layout that optimizes padding and plot sizes for mobile devices
+- **Interactive Shock Visualization**: Dynamic visualization of normal shock waves with "↑ Shockwave" annotation
+- **Live Status Indicator**: "⚙️ Solving..." spinning gear animation during computations
+- **Simplified Typography**: Clean 2-size font system for improved readability
 - **Hover Tooltips**: Display x, M, p/p₀, and r values on hover
-- **Interactive Legend**: Click legend items to toggle curves
-- **Parameter Groups**: Organized geometry controls with visual grouping
-- **Numeric Inputs**: Sliders with accompanying number input boxes
+- **Interactive Legend**: Toggle Mach Number, Pressure Ratio, and Radius curves
 
 ## 🚀 Deployment
 
@@ -88,7 +82,7 @@ Open `nozzle_subsonic_v2_interactive.ipynb` in Jupyter Lab/Notebook for an inter
 1. Fork this repository or push it to your GitHub account
 2. Go to [share.streamlit.io](https://share.streamlit.io)
 3. Click "New app" and select your repository
-4. Set the main file path to `streamlit_app/app.py`
+4. Set the main file path to `app.py`
 5. Streamlit Cloud will automatically detect `requirements.txt` and install dependencies
 
 The app will be available at `https://your-app-name.streamlit.app`
