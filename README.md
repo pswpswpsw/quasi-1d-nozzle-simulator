@@ -39,18 +39,38 @@ pip install -r requirements.txt
 
 ## 🎮 Usage
 
-Run the Streamlit app:
+### Running the Streamlit App
 
+From the project root:
 ```bash
+cd streamlit_app
 uv run streamlit run app.py
 ```
 
-Or with pip:
+Or:
 ```bash
-streamlit run app.py
+uv run streamlit run streamlit_app/app.py
 ```
 
 The app will open in your browser at `http://localhost:8501`.
+
+### Using the Interactive Notebook
+
+Open `nozzle_subsonic_v2_interactive.ipynb` in Jupyter Lab/Notebook for an interactive notebook experience.
+
+## 📁 Project Structure
+
+```
+.
+├── streamlit_app/          # Streamlit web application
+│   ├── app.py             # Main application file
+│   ├── nozzle.py          # Nozzle class with flow simulation
+│   ├── geometry.py        # Geometry helper functions
+│   └── README.md          # App-specific documentation
+├── nozzle_subsonic_v2_interactive.ipynb  # Interactive Jupyter notebook
+├── pyproject.toml         # Project dependencies
+└── README.md              # This file
+```
 
 ## 🎨 UI Features
 
@@ -61,17 +81,6 @@ The app will open in your browser at `http://localhost:8501`.
 - **Parameter Groups**: Organized geometry controls with visual grouping
 - **Numeric Inputs**: Sliders with accompanying number input boxes
 
-## 📁 Project Structure
-
-```
-.
-├── app.py          # Main Streamlit application
-├── nozzle.py       # Nozzle class with flow simulation logic
-├── geometry.py     # Geometry helper functions for nozzle area profile
-├── requirements.txt # Python dependencies
-└── README.md       # This file
-```
-
 ## 🚀 Deployment
 
 ### Streamlit Cloud
@@ -79,7 +88,7 @@ The app will open in your browser at `http://localhost:8501`.
 1. Fork this repository or push it to your GitHub account
 2. Go to [share.streamlit.io](https://share.streamlit.io)
 3. Click "New app" and select your repository
-4. Set the main file path to `app.py`
+4. Set the main file path to `streamlit_app/app.py`
 5. Streamlit Cloud will automatically detect `requirements.txt` and install dependencies
 
 The app will be available at `https://your-app-name.streamlit.app`

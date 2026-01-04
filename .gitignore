@@ -20,6 +20,12 @@ ENV/
 *.swo
 *~
 
+<<<<<<< HEAD
+=======
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+>>>>>>> ca43ad2 (Initial commit: Quasi-1D Nozzle Flow Simulator with modern Streamlit UI)
 # OS files
 .DS_Store
 Thumbs.db
@@ -28,6 +34,11 @@ Thumbs.db
 .env
 .env.local
 
+<<<<<<< HEAD
 # Streamlit
 .streamlit/
 
+=======
+# Lock files (optional - uncomment if you want to ignore)
+# uv.lock
+>>>>>>> ca43ad2 (Initial commit: Quasi-1D Nozzle Flow Simulator with modern Streamlit UI)
