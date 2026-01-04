@@ -571,15 +571,15 @@ if geometry_type == 'rocketisp':
 
     # Check if geometry parameters changed
     geometry_changed = (
-        Rthrt != st.session_state.geometry_params['Rthrt'] or
-        CR != st.session_state.geometry_params['CR'] or
-        eps != st.session_state.geometry_params['eps'] or
-        LnozInp != st.session_state.geometry_params['LnozInp'] or
-        RupThroat != st.session_state.geometry_params['RupThroat'] or
-        RdwnThroat != st.session_state.geometry_params['RdwnThroat'] or
-        RchmConv != st.session_state.geometry_params['RchmConv'] or
-        cham_conv_deg != st.session_state.geometry_params['cham_conv_deg'] or
-        LchmOvrDt != st.session_state.geometry_params['LchmOvrDt']
+        Rthrt != st.session_state.geometry_params.get('Rthrt', Rthrt) or
+        CR != st.session_state.geometry_params.get('CR', CR) or
+        eps != st.session_state.geometry_params.get('eps', eps) or
+        LnozInp != st.session_state.geometry_params.get('LnozInp', LnozInp) or
+        RupThroat != st.session_state.geometry_params.get('RupThroat', RupThroat) or
+        RdwnThroat != st.session_state.geometry_params.get('RdwnThroat', RdwnThroat) or
+        RchmConv != st.session_state.geometry_params.get('RchmConv', RchmConv) or
+        cham_conv_deg != st.session_state.geometry_params.get('cham_conv_deg', cham_conv_deg) or
+        LchmOvrDt != st.session_state.geometry_params.get('LchmOvrDt', LchmOvrDt)
     )
 
     # Update session state
@@ -594,6 +594,7 @@ if geometry_type == 'rocketisp':
         'cham_conv_deg': cham_conv_deg,
         'LchmOvrDt': LchmOvrDt
     }
+    parabolic_changed = False
 
 else:  # Simple Parabolic geometry
     st.sidebar.markdown("""
@@ -724,6 +725,7 @@ else:  # Simple Parabolic geometry
         'xmin': xmin_parab,
         'xmax': xmax_parab
     }
+    geometry_changed = False
 
 # Validation function
 def validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, RchmConv, cham_conv_deg, LchmOvrDt):
@@ -758,8 +760,21 @@ else:
     validation_errors = []
 
 # Recreate geometry and nozzle if parameters changed or if nozzle doesn't exist
+# Initialize variables if not set
+if geometry_type == 'rocketisp':
+    if 'geometry_changed' not in locals():
+        geometry_changed = False
+    parabolic_changed = False
+else:
+    if 'parabolic_changed' not in locals():
+        parabolic_changed = False
+    if 'geometry_changed' not in locals():
+        geometry_changed = False
+
 geometry_changed_check = geometry_changed if geometry_type == 'rocketisp' else parabolic_changed
-if (geometry_changed_check or 'nozzle' not in st.session_state or st.session_state.get('geometry_type') != geometry_type) and not validation_errors:
+geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
+
+if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.session_state) and not validation_errors:
     try:
         start_time = time.time()
         if geometry_type == 'rocketisp':
