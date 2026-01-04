@@ -397,10 +397,10 @@ class Nozzle(object):
                 radius_extended[i] = radius_array[-1]
         
         # Create hover text with all values
-        hover_text_M = [f'x: {x:.3f}<br>M: {M:.4f}<br>p/p₀: {p:.4f}<br>r: {r:.3f}' 
+        hover_text_M = [f'M: {M:.4f}<br>p/p₀: {p:.4f}<br>r: {r:.3f}' 
                         for x, M, p, r in zip(self.xeval, M_array, p_array, radius_extended)]
         hover_text_p = hover_text_M.copy()
-        hover_text_r = [f'x: {x:.3f}<br>r: {r:.3f}' 
+        hover_text_r = [f'r: {r:.3f}' 
                        for x, r in zip(self.x, radius_array)]
         
         # Primary axis: M(x) and p/p0(x)
