@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 from nozzle import Nozzle
-from geometry import get_A
+from geometry import get_A, get_parabolic_A
 from rocketisp.geometry import Geometry
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -277,6 +277,20 @@ DEFAULT_PRESET = {
 if 'geometry_params' not in st.session_state:
     st.session_state.geometry_params = DEFAULT_PRESET.copy()
 
+# Initialize geometry type
+if 'geometry_type' not in st.session_state:
+    st.session_state.geometry_type = 'rocketisp'
+
+# Initialize parabolic geometry parameters
+if 'parabolic_params' not in st.session_state:
+    st.session_state.parabolic_params = {
+        'a': 1.5,
+        'b': 0.6,
+        'c': 0.25,
+        'xmin': 0.0,
+        'xmax': 1.0
+    }
+
 # Helper function to create slider with number input
 def slider_with_input(label, min_val, max_val, value, step, key, unit="", help_text=""):
     """Create a slider with a number input box."""
@@ -312,19 +326,39 @@ def slider_with_input(label, min_val, max_val, value, step, key, unit="", help_t
 # Geometry parameters section with visual grouping
 st.sidebar.markdown("### Nozzle Geometry")
 
+# Geometry type selector
+geometry_type = st.sidebar.radio(
+    "Geometry Type",
+    ["rocketisp", "Simple Parabolic"],
+    index=0 if st.session_state.geometry_type == 'rocketisp' else 1,
+    key="geometry_type_selector"
+)
+st.session_state.geometry_type = geometry_type
+
 # Reset to default button
 if st.sidebar.button("🔄 Reset to Default", use_container_width=True, type="secondary"):
-    st.session_state.geometry_params = DEFAULT_PRESET.copy()
+    if geometry_type == 'rocketisp':
+        st.session_state.geometry_params = DEFAULT_PRESET.copy()
+    else:
+        st.session_state.parabolic_params = {
+            'a': 1.5,
+            'b': 0.6,
+            'c': 0.25,
+            'xmin': 0.0,
+            'xmax': 1.0
+        }
     st.rerun()
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# Chamber Geometry Group
-st.sidebar.markdown("""
-    <div class="param-group">
-        <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Chamber Geometry</p>
-    </div>
-    """, unsafe_allow_html=True)
+# Show parameters based on geometry type
+if geometry_type == 'rocketisp':
+    # Chamber Geometry Group
+    st.sidebar.markdown("""
+        <div class="param-group">
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Chamber Geometry</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 Rthrt = st.sidebar.slider(
     r"Throat Radius ($R_{thrt}$)",
@@ -535,7 +569,140 @@ if abs(LnozInp - LnozInp_input) > 0.5:
     LnozInp = LnozInp_input
 st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
 
-# Check if geometry parameters changed
+else:  # Simple Parabolic geometry
+    st.sidebar.markdown("""
+        <div class="param-group">
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Parabolic Parameters</p>
+            <p style="color: #9ca3af; font-size: 0.8rem; margin: 0;">$A(x) = a(x-b)^2 + c$</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    a = st.sidebar.slider(
+        r"Coefficient $a$",
+        min_value=0.1,
+        max_value=10.0,
+        value=st.session_state.parabolic_params['a'],
+        step=0.1,
+        help="Coefficient for quadratic term"
+    )
+    a_input = st.sidebar.number_input(
+        "",
+        min_value=0.1,
+        max_value=10.0,
+        value=float(st.session_state.parabolic_params['a']),
+        step=0.1,
+        key="a_input",
+        label_visibility="collapsed"
+    )
+    if abs(a - a_input) > 0.05:
+        a = a_input
+    
+    b = st.sidebar.slider(
+        r"Throat Location $b$",
+        min_value=0.0,
+        max_value=1.0,
+        value=st.session_state.parabolic_params['b'],
+        step=0.01,
+        help="Horizontal shift (throat location)"
+    )
+    b_input = st.sidebar.number_input(
+        "",
+        min_value=0.0,
+        max_value=1.0,
+        value=float(st.session_state.parabolic_params['b']),
+        step=0.01,
+        key="b_input",
+        label_visibility="collapsed"
+    )
+    if abs(b - b_input) > 0.005:
+        b = b_input
+    
+    c = st.sidebar.slider(
+        r"Minimum Area $c$",
+        min_value=0.01,
+        max_value=1.0,
+        value=st.session_state.parabolic_params['c'],
+        step=0.01,
+        help="Minimum area (throat area)"
+    )
+    c_input = st.sidebar.number_input(
+        "",
+        min_value=0.01,
+        max_value=1.0,
+        value=float(st.session_state.parabolic_params['c']),
+        step=0.01,
+        key="c_input",
+        label_visibility="collapsed"
+    )
+    if abs(c - c_input) > 0.005:
+        c = c_input
+    
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    st.sidebar.markdown("**Domain**")
+    
+    xmin_parab = st.sidebar.slider(
+        r"$x_{min}$",
+        min_value=-1.0,
+        max_value=1.0,
+        value=st.session_state.parabolic_params['xmin'],
+        step=0.1,
+        help="Minimum x coordinate"
+    )
+    xmin_parab_input = st.sidebar.number_input(
+        "",
+        min_value=-1.0,
+        max_value=1.0,
+        value=float(st.session_state.parabolic_params['xmin']),
+        step=0.1,
+        key="xmin_parab_input",
+        label_visibility="collapsed"
+    )
+    if abs(xmin_parab - xmin_parab_input) > 0.05:
+        xmin_parab = xmin_parab_input
+    
+    xmax_parab = st.sidebar.slider(
+        r"$x_{max}$",
+        min_value=0.0,
+        max_value=2.0,
+        value=st.session_state.parabolic_params['xmax'],
+        step=0.1,
+        help="Maximum x coordinate"
+    )
+    xmax_parab_input = st.sidebar.number_input(
+        "",
+        min_value=0.0,
+        max_value=2.0,
+        value=float(st.session_state.parabolic_params['xmax']),
+        step=0.1,
+        key="xmax_parab_input",
+        label_visibility="collapsed"
+    )
+    if abs(xmax_parab - xmax_parab_input) > 0.05:
+        xmax_parab = xmax_parab_input
+    
+    # Check if parabolic parameters changed (before updating session state)
+    old_params = st.session_state.parabolic_params.copy()
+    parabolic_changed = (
+        a != old_params.get('a', a) or
+        b != old_params.get('b', b) or
+        c != old_params.get('c', c) or
+        xmin_parab != old_params.get('xmin', xmin_parab) or
+        xmax_parab != old_params.get('xmax', xmax_parab)
+    )
+    
+    # Update session state
+    st.session_state.parabolic_params = {
+        'a': a,
+        'b': b,
+        'c': c,
+        'xmin': xmin_parab,
+        'xmax': xmax_parab
+    }
+else:
+    parabolic_changed = False
+
+# Check if geometry parameters changed (for rocketisp)
+if geometry_type == 'rocketisp':
 geometry_changed = (
     Rthrt != st.session_state.geometry_params['Rthrt'] or
     CR != st.session_state.geometry_params['CR'] or
@@ -584,24 +751,37 @@ def validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, Rch
     return errors
 
 # Validate parameters
-validation_errors = validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, RchmConv, cham_conv_deg, LchmOvrDt)
-if validation_errors:
-    st.sidebar.error("**Validation Errors:**")
-    for error in validation_errors:
-        st.sidebar.error(f"• {error}")
+if geometry_type == 'rocketisp':
+    validation_errors = validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, RchmConv, cham_conv_deg, LchmOvrDt)
+    if validation_errors:
+        st.sidebar.error("**Validation Errors:**")
+        for error in validation_errors:
+            st.sidebar.error(f"• {error}")
+else:
+    validation_errors = []
 
 # Recreate geometry and nozzle if parameters changed or if nozzle doesn't exist
-if (geometry_changed or 'nozzle' not in st.session_state) and not validation_errors:
+geometry_changed_check = geometry_changed if geometry_type == 'rocketisp' else parabolic_changed
+if (geometry_changed_check or 'nozzle' not in st.session_state or st.session_state.get('geometry_type') != geometry_type) and not validation_errors:
     try:
         start_time = time.time()
-        # SSME Geometry from https://rocketisp.readthedocs.io/en/latest/models.html#geometry
-        G = Geometry(
-            Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
-            RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
-            RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
-            LchmOvrDt=LchmOvrDt
-        )
-        A, xmin, xmax = get_A(G)
+        if geometry_type == 'rocketisp':
+            # SSME Geometry from https://rocketisp.readthedocs.io/en/latest/models.html#geometry
+            G = Geometry(
+                Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
+                RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
+                RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
+                LchmOvrDt=LchmOvrDt
+            )
+            A, xmin, xmax = get_A(G)
+        else:  # Simple Parabolic
+            A, xmin, xmax = get_parabolic_A(
+                a=st.session_state.parabolic_params['a'],
+                b=st.session_state.parabolic_params['b'],
+                c=st.session_state.parabolic_params['c'],
+                xmin=st.session_state.parabolic_params['xmin'],
+                xmax=st.session_state.parabolic_params['xmax']
+            )
         
         # Default parameters
         g, R = 1.4, 287
@@ -615,6 +795,7 @@ if (geometry_changed or 'nozzle' not in st.session_state) and not validation_err
         calc_time = time.time() - start_time
         st.session_state.sim_status = "idle"
         st.session_state.geometry_calc_time = calc_time
+        st.session_state.geometry_type = geometry_type
     except Exception as e:
         st.error(f"Failed to create nozzle geometry: {str(e)}")
         st.session_state.sim_status = "error"
