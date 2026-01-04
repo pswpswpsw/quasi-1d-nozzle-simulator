@@ -11,6 +11,7 @@ A modern, interactive web application for simulating compressible flow through r
   - Sonic Throat with Oblique Shock at Exit
   - Sonic Throat with Expansion Fan at Exit
 - **Nozzle Geometry Control**: Adjustable parameters using `rocketisp` geometry model
+  - Default parabolic profile optimized for $A_e/A_t = 2$
 - **Professional UI**: Modern dark theme with interactive plots and organized controls
 - **Critical Pressure Ratios**: Automatic calculation and display of three critical pressure ratios
 
@@ -72,7 +73,8 @@ Open `nozzle_subsonic_v2_interactive.ipynb` in Jupyter Lab/Notebook for an inter
 - **Interactive Shock Visualization**: Dynamic visualization of normal shock waves with "↑ Shockwave" annotation
 - **Live Status Indicator**: "⚙️ Solving..." spinning gear animation during computations
 - **Simplified Typography**: Clean 2-size font system for improved readability
-- **Hover Tooltips**: Display x, M, p/p₀, and r values on hover
+- **Refined Tooltips**: Unified x-axis hover with clean, non-overlapping data for $M$, $p/p_0$, and $r$
+- **Visual Clarity**: Lightly shaded nozzle geometry and distinct curve colors
 - **Interactive Legend**: Toggle Mach Number, Pressure Ratio, and Radius curves
 
 ## 🚀 Deployment
