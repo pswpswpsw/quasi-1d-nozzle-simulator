@@ -396,12 +396,10 @@ class Nozzle(object):
             else:
                 radius_extended[i] = radius_array[-1]
         
-        # Create hover text with all values
-        hover_text_M = [f'M: {M:.4f}<br>p/p₀: {p:.4f}<br>r: {r:.3f}' 
-                        for x, M, p, r in zip(self.xeval, M_array, p_array, radius_extended)]
-        hover_text_p = hover_text_M.copy()
-        hover_text_r = [f'r: {r:.3f}' 
-                       for x, r in zip(self.x, radius_array)]
+        # Create hover text with individual values
+        hover_text_M = [f'M: {M:.4f}' for M in M_array]
+        hover_text_p = [f'p/p₀: {p:.4f}' for p in p_array]
+        hover_text_r = [f'r: {r:.3f}' for r in radius_array]
         
         # Primary axis: M(x) and p/p0(x)
         # Color palette: Nature/Science publication colors (Wong palette)
