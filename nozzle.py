@@ -567,13 +567,13 @@ class Nozzle(object):
                        for x, r in zip(self.x, radius_array)]
         
         # Primary axis: M(x) and p/p0(x)
-        # Color palette: cyan accent, amber warning, neutral gray
+        # Color palette: Nature/Science publication colors (Wong palette)
         fig.add_trace(
             go.Scatter(
                 x=self.xeval, 
                 y=M_array, 
                 name='M(x)', 
-                line=dict(color='#06b6d4', width=2.5),  # Cyan accent
+                line=dict(color='#0072B2', width=4),  # Nature blue, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_M,
                 mode='lines'
@@ -585,7 +585,7 @@ class Nozzle(object):
                 x=self.xeval, 
                 y=p_array, 
                 name='p/p₀(x)', 
-                line=dict(color='#f59e0b', width=2, dash='dash'),  # Amber warning
+                line=dict(color='#E69F00', width=3.5, dash='dash'),  # Nature orange, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_p,
                 mode='lines'
@@ -599,7 +599,7 @@ class Nozzle(object):
                 x=self.x, 
                 y=radius_array, 
                 name='r(x)', 
-                line=dict(color='#9ca3af', width=2),  # Neutral gray
+                line=dict(color='#999999', width=3.5),  # Nature gray, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_r,
                 mode='lines'
@@ -620,7 +620,7 @@ class Nozzle(object):
                     x=x_arr, 
                     y=y_arr, 
                     name=f'Shockwave (β={beta*180/np.pi:.3f}°)', 
-                    line=dict(color='#ef4444', width=2.5),  # Red for emphasis
+                    line=dict(color='#D55E00', width=4),  # Nature vermillion, thicker line
                     hovertemplate='<b>%{text}</b><extra></extra>',
                     text=hover_text_shock,
                     mode='lines'
@@ -651,7 +651,7 @@ class Nozzle(object):
                         x=xs, 
                         y=ys, 
                         name='Expansion Fan' if j == 0 else None,
-                        line=dict(color='#06b6d4', width=1.5, dash='dash'),  # Cyan accent
+                        line=dict(color='#56B4E9', width=2.5, dash='dash'),  # Nature sky blue, thicker line
                         hovertemplate='<b>%{text}</b><extra></extra>',
                         text=hover_text_fan,
                         showlegend=(j == 0),
@@ -685,8 +685,8 @@ class Nozzle(object):
         # Modern dark theme with improved contrast
         fig.update_xaxes(
             title_text="x (Axial Position)",
-            title_font=dict(size=13, color='#ffffff', family='Inter, sans-serif'),  # Brighter than grid
-            tickfont=dict(color='#d1d5db', size=10),  # Brighter tick labels
+            title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
+            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
             showgrid=True, 
             gridcolor='rgba(156,163,175,0.12)',  # Reduced opacity (12%)
             gridwidth=1,
@@ -697,8 +697,8 @@ class Nozzle(object):
         )
         fig.update_yaxes(
             title_text="M(x), p/p₀(x)",
-            title_font=dict(size=13, color='#ffffff', family='Inter, sans-serif'),  # Brighter than grid
-            tickfont=dict(color='#d1d5db', size=10),  # Brighter tick labels
+            title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
+            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
             secondary_y=False, 
             range=[y_min, y_max], 
             showgrid=True, 
@@ -710,8 +710,8 @@ class Nozzle(object):
         )
         fig.update_yaxes(
             title_text="r(x) (Radius)",
-            title_font=dict(size=13, color='#ffffff', family='Inter, sans-serif'),  # Brighter than grid
-            tickfont=dict(color='#d1d5db', size=10),  # Brighter tick labels
+            title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
+            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
             secondary_y=True, 
             range=[0, max(radius_array)*1.1], 
             showgrid=False,
@@ -723,14 +723,14 @@ class Nozzle(object):
         fig.update_layout(
             plot_bgcolor='#0f0f0f',  # Darker background
             paper_bgcolor='#0f0f0f',
-            font=dict(color='#ececec', size=12, family='Inter, sans-serif'),
+            font=dict(color='#ececec', size=16, family='Inter, sans-serif'),  # Increased font size
             legend=dict(
                 orientation="v",
                 yanchor="top",
                 y=0.98,
                 xanchor="right",
                 x=0.98,  # Inside plot, top-right
-                font=dict(color='#ececec', size=10),
+                font=dict(color='#ececec', size=14),  # Increased font size
                 bgcolor='rgba(15,15,15,0.85)',  # Semi-transparent dark background
                 bordercolor='rgba(156,163,175,0.3)',
                 borderwidth=1,

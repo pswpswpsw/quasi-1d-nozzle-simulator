@@ -291,37 +291,6 @@ if 'parabolic_params' not in st.session_state:
         'xmax': 1.0
     }
 
-# Helper function to create slider with number input
-def slider_with_input(label, min_val, max_val, value, step, key, unit="", help_text=""):
-    """Create a slider with a number input box."""
-    col1, col2 = st.sidebar.columns([3, 1])
-    with col1:
-        slider_val = st.sidebar.slider(
-            label,
-            min_value=min_val,
-            max_value=max_val,
-            value=value,
-            step=step,
-            key=f"slider_{key}",
-            help=help_text
-        )
-    with col2:
-        num_input = st.sidebar.number_input(
-            "",
-            min_value=float(min_val),
-            max_value=float(max_val),
-            value=float(value),
-            step=float(step),
-            key=f"input_{key}",
-            label_visibility="collapsed"
-        )
-        if unit:
-            st.sidebar.caption(f"<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>{unit}</div>", unsafe_allow_html=True)
-    
-    # Sync values
-    if abs(slider_val - num_input) > step/10:
-        return slider_val
-    return num_input
 
 # Geometry parameters section with visual grouping
 st.sidebar.markdown("### Nozzle Geometry")
@@ -366,113 +335,50 @@ if geometry_type == 'SSME':
         </div>
         """, unsafe_allow_html=True)
 
-    Rthrt = st.sidebar.slider(
+    Rthrt = st.sidebar.number_input(
         r"Throat Radius ($R_{thrt}$)",
-        min_value=1.0,
-        max_value=20.0,
-        value=st.session_state.geometry_params['Rthrt'],
-        step=0.1,
-        help="Radius at the throat"
-    )
-
-    Rthrt_input = st.sidebar.number_input(
-        "Value",
         min_value=1.0,
         max_value=20.0,
         value=float(st.session_state.geometry_params['Rthrt']),
         step=0.1,
-        key="Rthrt_input",
-        label_visibility="collapsed"
+        help="Radius at the throat (mm)"
     )
-    if abs(Rthrt - Rthrt_input) > 0.05:
-        Rthrt = Rthrt_input
-    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
 
-    CR = st.sidebar.slider(
+    CR = st.sidebar.number_input(
         r"Contraction Ratio ($CR = A_c/A_t$)",
-        min_value=1.5,
-        max_value=10.0,
-        value=st.session_state.geometry_params['CR'],
-        step=0.1,
-        help="Ratio of chamber area to throat area"
-    )
-
-    CR_input = st.sidebar.number_input(
-        "",
         min_value=1.5,
         max_value=10.0,
         value=float(st.session_state.geometry_params['CR']),
         step=0.1,
-        key="CR_input",
-        label_visibility="collapsed"
+        help="Ratio of chamber area to throat area"
     )
-    if abs(CR - CR_input) > 0.05:
-        CR = CR_input
-    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>–</div>", unsafe_allow_html=True)
 
-    RchmConv = st.sidebar.slider(
+    RchmConv = st.sidebar.number_input(
         r"Chamber Convergence Radius ($R_{chm}$)",
-        min_value=0.5,
-        max_value=5.0,
-        value=st.session_state.geometry_params['RchmConv'],
-        step=0.01,
-        help="Chamber convergence radius"
-    )
-
-    RchmConv_input = st.sidebar.number_input(
-        "",
         min_value=0.5,
         max_value=5.0,
         value=float(st.session_state.geometry_params['RchmConv']),
         step=0.01,
-        key="RchmConv_input",
-        label_visibility="collapsed"
+        help="Chamber convergence radius"
     )
-    if abs(RchmConv - RchmConv_input) > 0.005:
-        RchmConv = RchmConv_input
 
-    cham_conv_deg = st.sidebar.slider(
+    cham_conv_deg = st.sidebar.number_input(
         r"Chamber Convergence Angle ($\theta$, deg)",
-        min_value=10.0,
-        max_value=45.0,
-        value=st.session_state.geometry_params['cham_conv_deg'],
-        step=0.1,
-        help="Chamber convergence angle in degrees"
-    )
-
-    cham_conv_deg_input = st.sidebar.number_input(
-        "",
         min_value=10.0,
         max_value=45.0,
         value=float(st.session_state.geometry_params['cham_conv_deg']),
         step=0.1,
-        key="cham_conv_deg_input",
-        label_visibility="collapsed"
+        help="Chamber convergence angle in degrees"
     )
-    if abs(cham_conv_deg - cham_conv_deg_input) > 0.05:
-        cham_conv_deg = cham_conv_deg_input
-    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>deg</div>", unsafe_allow_html=True)
 
-    LchmOvrDt = st.sidebar.slider(
+    LchmOvrDt = st.sidebar.number_input(
         r"Chamber Length/Diameter ($L_{chm}/D_t$)",
-        min_value=0.5,
-        max_value=5.0,
-        value=st.session_state.geometry_params['LchmOvrDt'],
-        step=0.1,
-        help="Chamber length over diameter ratio"
-    )
-
-    LchmOvrDt_input = st.sidebar.number_input(
-        "",
         min_value=0.5,
         max_value=5.0,
         value=float(st.session_state.geometry_params['LchmOvrDt']),
         step=0.1,
-        key="LchmOvrDt_input",
-        label_visibility="collapsed"
+        help="Chamber length over diameter ratio"
     )
-    if abs(LchmOvrDt - LchmOvrDt_input) > 0.05:
-        LchmOvrDt = LchmOvrDt_input
 
     # Throat Region Group
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
@@ -482,47 +388,23 @@ if geometry_type == 'SSME':
         </div>
         """, unsafe_allow_html=True)
 
-    RupThroat = st.sidebar.slider(
+    RupThroat = st.sidebar.number_input(
         r"Upstream Throat Radius ($R_{up}$)",
-        min_value=0.5,
-        max_value=3.0,
-        value=st.session_state.geometry_params['RupThroat'],
-        step=0.01,
-        help="Upstream throat radius parameter"
-    )
-
-    RupThroat_input = st.sidebar.number_input(
-        "",
         min_value=0.5,
         max_value=3.0,
         value=float(st.session_state.geometry_params['RupThroat']),
         step=0.01,
-        key="RupThroat_input",
-        label_visibility="collapsed"
+        help="Upstream throat radius parameter"
     )
-    if abs(RupThroat - RupThroat_input) > 0.005:
-        RupThroat = RupThroat_input
 
-    RdwnThroat = st.sidebar.slider(
+    RdwnThroat = st.sidebar.number_input(
         r"Downstream Throat Radius ($R_{dwn}$)",
-        min_value=0.1,
-        max_value=1.0,
-        value=st.session_state.geometry_params['RdwnThroat'],
-        step=0.01,
-        help="Downstream throat radius parameter"
-    )
-
-    RdwnThroat_input = st.sidebar.number_input(
-        "",
         min_value=0.1,
         max_value=1.0,
         value=float(st.session_state.geometry_params['RdwnThroat']),
         step=0.01,
-        key="RdwnThroat_input",
-        label_visibility="collapsed"
+        help="Downstream throat radius parameter"
     )
-    if abs(RdwnThroat - RdwnThroat_input) > 0.005:
-        RdwnThroat = RdwnThroat_input
 
     # Expansion Section Group
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
@@ -532,48 +414,23 @@ if geometry_type == 'SSME':
         </div>
         """, unsafe_allow_html=True)
 
-    eps = st.sidebar.slider(
+    eps = st.sidebar.number_input(
         r"Expansion Ratio ($\epsilon = A_e/A_t$)",
-        min_value=5.0,
-        max_value=200.0,
-        value=st.session_state.geometry_params['eps'],
-        step=1.0,
-        help="Ratio of exit area to throat area"
-    )
-
-    eps_input = st.sidebar.number_input(
-        "",
         min_value=5.0,
         max_value=200.0,
         value=float(st.session_state.geometry_params['eps']),
         step=1.0,
-        key="eps_input",
-        label_visibility="collapsed"
+        help="Ratio of exit area to throat area"
     )
-    if abs(eps - eps_input) > 0.5:
-        eps = eps_input
 
-    LnozInp = st.sidebar.slider(
+    LnozInp = st.sidebar.number_input(
         r"Nozzle Length ($L_{noz}$)",
-        min_value=50.0,
-        max_value=300.0,
-        value=st.session_state.geometry_params['LnozInp'],
-        step=1.0,
-        help="Length of the nozzle"
-    )
-
-    LnozInp_input = st.sidebar.number_input(
-        "",
         min_value=50.0,
         max_value=300.0,
         value=float(st.session_state.geometry_params['LnozInp']),
         step=1.0,
-        key="LnozInp_input",
-        label_visibility="collapsed"
+        help="Length of the nozzle (mm)"
     )
-    if abs(LnozInp - LnozInp_input) > 0.5:
-        LnozInp = LnozInp_input
-    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
 
     # Check if geometry parameters changed
     geometry_changed = (
@@ -610,108 +467,53 @@ else:  # Simple Parabolic geometry
         </div>
         """, unsafe_allow_html=True)
     
-    a = st.sidebar.slider(
+    a = st.sidebar.number_input(
         r"Coefficient $a$",
-        min_value=0.1,
-        max_value=10.0,
-        value=st.session_state.parabolic_params['a'],
-        step=0.1,
-        help="Coefficient for quadratic term"
-    )
-    a_input = st.sidebar.number_input(
-        "",
         min_value=0.1,
         max_value=10.0,
         value=float(st.session_state.parabolic_params['a']),
         step=0.1,
-        key="a_input",
-        label_visibility="collapsed"
+        help="Coefficient for quadratic term"
     )
-    if abs(a - a_input) > 0.05:
-        a = a_input
     
-    b = st.sidebar.slider(
+    b = st.sidebar.number_input(
         r"Throat Location $b$",
-        min_value=0.0,
-        max_value=1.0,
-        value=st.session_state.parabolic_params['b'],
-        step=0.01,
-        help="Horizontal shift (throat location)"
-    )
-    b_input = st.sidebar.number_input(
-        "",
         min_value=0.0,
         max_value=1.0,
         value=float(st.session_state.parabolic_params['b']),
         step=0.01,
-        key="b_input",
-        label_visibility="collapsed"
+        help="Horizontal shift (throat location)"
     )
-    if abs(b - b_input) > 0.005:
-        b = b_input
     
-    c = st.sidebar.slider(
+    c = st.sidebar.number_input(
         r"Minimum Area $c$",
-        min_value=0.01,
-        max_value=1.0,
-        value=st.session_state.parabolic_params['c'],
-        step=0.01,
-        help="Minimum area (throat area)"
-    )
-    c_input = st.sidebar.number_input(
-        "",
         min_value=0.01,
         max_value=1.0,
         value=float(st.session_state.parabolic_params['c']),
         step=0.01,
-        key="c_input",
-        label_visibility="collapsed"
+        help="Minimum area (throat area)"
     )
-    if abs(c - c_input) > 0.005:
-        c = c_input
     
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown("**Domain**")
     
-    xmin_parab = st.sidebar.slider(
+    xmin_parab = st.sidebar.number_input(
         r"$x_{min}$",
-        min_value=-1.0,
-        max_value=1.0,
-        value=st.session_state.parabolic_params['xmin'],
-        step=0.1,
-        help="Minimum x coordinate"
-    )
-    xmin_parab_input = st.sidebar.number_input(
-        "",
         min_value=-1.0,
         max_value=1.0,
         value=float(st.session_state.parabolic_params['xmin']),
         step=0.1,
-        key="xmin_parab_input",
-        label_visibility="collapsed"
+        help="Minimum x coordinate"
     )
-    if abs(xmin_parab - xmin_parab_input) > 0.05:
-        xmin_parab = xmin_parab_input
     
-    xmax_parab = st.sidebar.slider(
+    xmax_parab = st.sidebar.number_input(
         r"$x_{max}$",
-        min_value=0.0,
-        max_value=2.0,
-        value=st.session_state.parabolic_params['xmax'],
-        step=0.1,
-        help="Maximum x coordinate"
-    )
-    xmax_parab_input = st.sidebar.number_input(
-        "",
         min_value=0.0,
         max_value=2.0,
         value=float(st.session_state.parabolic_params['xmax']),
         step=0.1,
-        key="xmax_parab_input",
-        label_visibility="collapsed"
+        help="Maximum x coordinate"
     )
-    if abs(xmax_parab - xmax_parab_input) > 0.05:
-        xmax_parab = xmax_parab_input
     
     # Check if parabolic parameters changed (before updating session state)
     old_params = st.session_state.parabolic_params.copy()
@@ -831,87 +633,49 @@ else:
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("### Flow Parameters")
 
-# Pressure ratio slider with exponential scaling
+# Pressure ratio slider with log scale for fine control near 0
 # Use log10 space: from log10(1e-7) = -7 to log10(1) = 0
 log_min = -7.0
 log_max = 0.0
 # Default: 0.8 for normal shock in expansion (works for both geometries)
-log_default = np.log10(0.8)  # Default value in log space - normal shock in expansion
+log_default = np.log10(0.8)
 
+# Initialize session state for log pressure ratio if not exists
+if 'log_p_ratio' not in st.session_state:
+    st.session_state.log_p_ratio = log_default
+
+# Slider in log space (for fine control near 0)
 log_p_ratio = st.sidebar.slider(
-    r"Back Pressure Ratio ($p_b/p_0$) - Log Scale",
+    r"Back Pressure Ratio ($p_b/p_0$)",
     min_value=log_min,
     max_value=log_max,
-    value=log_default,
+    value=float(st.session_state.log_p_ratio),
     step=0.01,
-    format="%.2f",
-    help="Log₁₀ of pressure ratio. Use exponential scaling from 1e-7 to 1."
+    help="Pressure ratio from 1e-7 to 1. Uses log scale for fine control near 0."
 )
 
-# Convert from log space to linear space
+# Convert from log space to linear space for display and calculations
 p_ratio = 10.0 ** log_p_ratio
 
 # Display the actual linear value
 st.sidebar.markdown(f"""
     <div style="
         background-color: #1f1f1f;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 12px 0;
+        padding: 10px;
+        border-radius: 6px;
+        margin: 8px 0;
         border: 1px solid #2d2d2d;
+        text-align: center;
     ">
-        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0 0 4px 0;">Current Value</p>
-        <p style="color: #06b6d4; font-size: 1.1rem; font-weight: 600; margin: 0;">
-            $p_b/p_0 = {p_ratio:.4f}$
+        <p style="color: #9ca3af; font-size: 0.8rem; margin: 0 0 4px 0;">Actual Value</p>
+        <p style="color: #06b6d4; font-size: 1rem; font-weight: 600; margin: 0;">
+            $p_b/p_0 = {p_ratio:.6f}$
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-# Display critical pressure ratios
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown("**Critical Ratios**")
-st.sidebar.markdown(f"""
-    <div style="
-        background-color: #1f1f1f;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 8px 0;
-        border: 1px solid #2d2d2d;
-    ">
-        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0 0 6px 0;">Choked</p>
-        <p style="color: #ffffff; font-size: 1rem; font-weight: 500; margin: 0;">
-            $(p_b/p_0)_1 = {st.session_state.crit_p_ratio_1:.4f}$
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-st.sidebar.markdown(f"""
-    <div style="
-        background-color: #1f1f1f;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 8px 0;
-        border: 1px solid #2d2d2d;
-    ">
-        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0 0 6px 0;">Normal Shock</p>
-        <p style="color: #ffffff; font-size: 1rem; font-weight: 500; margin: 0;">
-            $(p_b/p_0)_2 = {st.session_state.crit_p_ratio_2:.4f}$
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-st.sidebar.markdown(f"""
-    <div style="
-        background-color: #1f1f1f;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 8px 0;
-        border: 1px solid #2d2d2d;
-    ">
-        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0 0 6px 0;">Shock Free</p>
-        <p style="color: #ffffff; font-size: 1rem; font-weight: 500; margin: 0;">
-            $(p_b/p_0)_3 = {st.session_state.crit_p_ratio_3:.4f}$
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+# Update session state
+st.session_state.log_p_ratio = log_p_ratio
 
 # Determine flow regime
 if p_ratio > nozzle.crit_p_ratio_1:
