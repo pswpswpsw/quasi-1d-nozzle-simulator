@@ -360,214 +360,240 @@ if geometry_type == 'rocketisp':
         </div>
         """, unsafe_allow_html=True)
 
-Rthrt = st.sidebar.slider(
-    r"Throat Radius ($R_{thrt}$)",
-    min_value=1.0,
-    max_value=20.0,
-    value=st.session_state.geometry_params['Rthrt'],
-    step=0.1,
-    help="Radius at the throat"
-)
+    Rthrt = st.sidebar.slider(
+        r"Throat Radius ($R_{thrt}$)",
+        min_value=1.0,
+        max_value=20.0,
+        value=st.session_state.geometry_params['Rthrt'],
+        step=0.1,
+        help="Radius at the throat"
+    )
 
-Rthrt_input = st.sidebar.number_input(
-    "Value",
-    min_value=1.0,
-    max_value=20.0,
-    value=float(st.session_state.geometry_params['Rthrt']),
-    step=0.1,
-    key="Rthrt_input",
-    label_visibility="collapsed"
-)
-if abs(Rthrt - Rthrt_input) > 0.05:
-    Rthrt = Rthrt_input
-st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
+    Rthrt_input = st.sidebar.number_input(
+        "Value",
+        min_value=1.0,
+        max_value=20.0,
+        value=float(st.session_state.geometry_params['Rthrt']),
+        step=0.1,
+        key="Rthrt_input",
+        label_visibility="collapsed"
+    )
+    if abs(Rthrt - Rthrt_input) > 0.05:
+        Rthrt = Rthrt_input
+    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
 
-CR = st.sidebar.slider(
-    r"Contraction Ratio ($CR = A_c/A_t$)",
-    min_value=1.5,
-    max_value=10.0,
-    value=st.session_state.geometry_params['CR'],
-    step=0.1,
-    help="Ratio of chamber area to throat area"
-)
+    CR = st.sidebar.slider(
+        r"Contraction Ratio ($CR = A_c/A_t$)",
+        min_value=1.5,
+        max_value=10.0,
+        value=st.session_state.geometry_params['CR'],
+        step=0.1,
+        help="Ratio of chamber area to throat area"
+    )
 
-CR_input = st.sidebar.number_input(
-    "",
-    min_value=1.5,
-    max_value=10.0,
-    value=float(st.session_state.geometry_params['CR']),
-    step=0.1,
-    key="CR_input",
-    label_visibility="collapsed"
-)
-if abs(CR - CR_input) > 0.05:
-    CR = CR_input
-st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>–</div>", unsafe_allow_html=True)
+    CR_input = st.sidebar.number_input(
+        "",
+        min_value=1.5,
+        max_value=10.0,
+        value=float(st.session_state.geometry_params['CR']),
+        step=0.1,
+        key="CR_input",
+        label_visibility="collapsed"
+    )
+    if abs(CR - CR_input) > 0.05:
+        CR = CR_input
+    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>–</div>", unsafe_allow_html=True)
 
-RchmConv = st.sidebar.slider(
-    r"Chamber Convergence Radius ($R_{chm}$)",
-    min_value=0.5,
-    max_value=5.0,
-    value=st.session_state.geometry_params['RchmConv'],
-    step=0.01,
-    help="Chamber convergence radius"
-)
+    RchmConv = st.sidebar.slider(
+        r"Chamber Convergence Radius ($R_{chm}$)",
+        min_value=0.5,
+        max_value=5.0,
+        value=st.session_state.geometry_params['RchmConv'],
+        step=0.01,
+        help="Chamber convergence radius"
+    )
 
-RchmConv_input = st.sidebar.number_input(
-    "",
-    min_value=0.5,
-    max_value=5.0,
-    value=float(st.session_state.geometry_params['RchmConv']),
-    step=0.01,
-    key="RchmConv_input",
-    label_visibility="collapsed"
-)
-if abs(RchmConv - RchmConv_input) > 0.005:
-    RchmConv = RchmConv_input
+    RchmConv_input = st.sidebar.number_input(
+        "",
+        min_value=0.5,
+        max_value=5.0,
+        value=float(st.session_state.geometry_params['RchmConv']),
+        step=0.01,
+        key="RchmConv_input",
+        label_visibility="collapsed"
+    )
+    if abs(RchmConv - RchmConv_input) > 0.005:
+        RchmConv = RchmConv_input
 
-cham_conv_deg = st.sidebar.slider(
-    r"Chamber Convergence Angle ($\theta$, deg)",
-    min_value=10.0,
-    max_value=45.0,
-    value=st.session_state.geometry_params['cham_conv_deg'],
-    step=0.1,
-    help="Chamber convergence angle in degrees"
-)
+    cham_conv_deg = st.sidebar.slider(
+        r"Chamber Convergence Angle ($\theta$, deg)",
+        min_value=10.0,
+        max_value=45.0,
+        value=st.session_state.geometry_params['cham_conv_deg'],
+        step=0.1,
+        help="Chamber convergence angle in degrees"
+    )
 
-cham_conv_deg_input = st.sidebar.number_input(
-    "",
-    min_value=10.0,
-    max_value=45.0,
-    value=float(st.session_state.geometry_params['cham_conv_deg']),
-    step=0.1,
-    key="cham_conv_deg_input",
-    label_visibility="collapsed"
-)
-if abs(cham_conv_deg - cham_conv_deg_input) > 0.05:
-    cham_conv_deg = cham_conv_deg_input
-st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>deg</div>", unsafe_allow_html=True)
+    cham_conv_deg_input = st.sidebar.number_input(
+        "",
+        min_value=10.0,
+        max_value=45.0,
+        value=float(st.session_state.geometry_params['cham_conv_deg']),
+        step=0.1,
+        key="cham_conv_deg_input",
+        label_visibility="collapsed"
+    )
+    if abs(cham_conv_deg - cham_conv_deg_input) > 0.05:
+        cham_conv_deg = cham_conv_deg_input
+    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>deg</div>", unsafe_allow_html=True)
 
-LchmOvrDt = st.sidebar.slider(
-    r"Chamber Length/Diameter ($L_{chm}/D_t$)",
-    min_value=0.5,
-    max_value=5.0,
-    value=st.session_state.geometry_params['LchmOvrDt'],
-    step=0.1,
-    help="Chamber length over diameter ratio"
-)
+    LchmOvrDt = st.sidebar.slider(
+        r"Chamber Length/Diameter ($L_{chm}/D_t$)",
+        min_value=0.5,
+        max_value=5.0,
+        value=st.session_state.geometry_params['LchmOvrDt'],
+        step=0.1,
+        help="Chamber length over diameter ratio"
+    )
 
-LchmOvrDt_input = st.sidebar.number_input(
-    "",
-    min_value=0.5,
-    max_value=5.0,
-    value=float(st.session_state.geometry_params['LchmOvrDt']),
-    step=0.1,
-    key="LchmOvrDt_input",
-    label_visibility="collapsed"
-)
-if abs(LchmOvrDt - LchmOvrDt_input) > 0.05:
-    LchmOvrDt = LchmOvrDt_input
+    LchmOvrDt_input = st.sidebar.number_input(
+        "",
+        min_value=0.5,
+        max_value=5.0,
+        value=float(st.session_state.geometry_params['LchmOvrDt']),
+        step=0.1,
+        key="LchmOvrDt_input",
+        label_visibility="collapsed"
+    )
+    if abs(LchmOvrDt - LchmOvrDt_input) > 0.05:
+        LchmOvrDt = LchmOvrDt_input
 
-# Throat Region Group
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown("""
-    <div class="param-group">
-        <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Throat Region</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Throat Region Group
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    st.sidebar.markdown("""
+        <div class="param-group">
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Throat Region</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-RupThroat = st.sidebar.slider(
-    r"Upstream Throat Radius ($R_{up}$)",
-    min_value=0.5,
-    max_value=3.0,
-    value=st.session_state.geometry_params['RupThroat'],
-    step=0.01,
-    help="Upstream throat radius parameter"
-)
+    RupThroat = st.sidebar.slider(
+        r"Upstream Throat Radius ($R_{up}$)",
+        min_value=0.5,
+        max_value=3.0,
+        value=st.session_state.geometry_params['RupThroat'],
+        step=0.01,
+        help="Upstream throat radius parameter"
+    )
 
-RupThroat_input = st.sidebar.number_input(
-    "",
-    min_value=0.5,
-    max_value=3.0,
-    value=float(st.session_state.geometry_params['RupThroat']),
-    step=0.01,
-    key="RupThroat_input",
-    label_visibility="collapsed"
-)
-if abs(RupThroat - RupThroat_input) > 0.005:
-    RupThroat = RupThroat_input
+    RupThroat_input = st.sidebar.number_input(
+        "",
+        min_value=0.5,
+        max_value=3.0,
+        value=float(st.session_state.geometry_params['RupThroat']),
+        step=0.01,
+        key="RupThroat_input",
+        label_visibility="collapsed"
+    )
+    if abs(RupThroat - RupThroat_input) > 0.005:
+        RupThroat = RupThroat_input
 
-RdwnThroat = st.sidebar.slider(
-    r"Downstream Throat Radius ($R_{dwn}$)",
-    min_value=0.1,
-    max_value=1.0,
-    value=st.session_state.geometry_params['RdwnThroat'],
-    step=0.01,
-    help="Downstream throat radius parameter"
-)
+    RdwnThroat = st.sidebar.slider(
+        r"Downstream Throat Radius ($R_{dwn}$)",
+        min_value=0.1,
+        max_value=1.0,
+        value=st.session_state.geometry_params['RdwnThroat'],
+        step=0.01,
+        help="Downstream throat radius parameter"
+    )
 
-RdwnThroat_input = st.sidebar.number_input(
-    "",
-    min_value=0.1,
-    max_value=1.0,
-    value=float(st.session_state.geometry_params['RdwnThroat']),
-    step=0.01,
-    key="RdwnThroat_input",
-    label_visibility="collapsed"
-)
-if abs(RdwnThroat - RdwnThroat_input) > 0.005:
-    RdwnThroat = RdwnThroat_input
+    RdwnThroat_input = st.sidebar.number_input(
+        "",
+        min_value=0.1,
+        max_value=1.0,
+        value=float(st.session_state.geometry_params['RdwnThroat']),
+        step=0.01,
+        key="RdwnThroat_input",
+        label_visibility="collapsed"
+    )
+    if abs(RdwnThroat - RdwnThroat_input) > 0.005:
+        RdwnThroat = RdwnThroat_input
 
-# Expansion Section Group
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown("""
-    <div class="param-group">
-        <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Expansion Section</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Expansion Section Group
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    st.sidebar.markdown("""
+        <div class="param-group">
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Expansion Section</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-eps = st.sidebar.slider(
-    r"Expansion Ratio ($\epsilon = A_e/A_t$)",
-    min_value=5.0,
-    max_value=200.0,
-    value=st.session_state.geometry_params['eps'],
-    step=1.0,
-    help="Ratio of exit area to throat area"
-)
+    eps = st.sidebar.slider(
+        r"Expansion Ratio ($\epsilon = A_e/A_t$)",
+        min_value=5.0,
+        max_value=200.0,
+        value=st.session_state.geometry_params['eps'],
+        step=1.0,
+        help="Ratio of exit area to throat area"
+    )
 
-eps_input = st.sidebar.number_input(
-    "",
-    min_value=5.0,
-    max_value=200.0,
-    value=float(st.session_state.geometry_params['eps']),
-    step=1.0,
-    key="eps_input",
-    label_visibility="collapsed"
-)
-if abs(eps - eps_input) > 0.5:
-    eps = eps_input
+    eps_input = st.sidebar.number_input(
+        "",
+        min_value=5.0,
+        max_value=200.0,
+        value=float(st.session_state.geometry_params['eps']),
+        step=1.0,
+        key="eps_input",
+        label_visibility="collapsed"
+    )
+    if abs(eps - eps_input) > 0.5:
+        eps = eps_input
 
-LnozInp = st.sidebar.slider(
-    r"Nozzle Length ($L_{noz}$)",
-    min_value=50.0,
-    max_value=300.0,
-    value=st.session_state.geometry_params['LnozInp'],
-    step=1.0,
-    help="Length of the nozzle"
-)
+    LnozInp = st.sidebar.slider(
+        r"Nozzle Length ($L_{noz}$)",
+        min_value=50.0,
+        max_value=300.0,
+        value=st.session_state.geometry_params['LnozInp'],
+        step=1.0,
+        help="Length of the nozzle"
+    )
 
-LnozInp_input = st.sidebar.number_input(
-    "",
-    min_value=50.0,
-    max_value=300.0,
-    value=float(st.session_state.geometry_params['LnozInp']),
-    step=1.0,
-    key="LnozInp_input",
-    label_visibility="collapsed"
-)
-if abs(LnozInp - LnozInp_input) > 0.5:
-    LnozInp = LnozInp_input
-st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
+    LnozInp_input = st.sidebar.number_input(
+        "",
+        min_value=50.0,
+        max_value=300.0,
+        value=float(st.session_state.geometry_params['LnozInp']),
+        step=1.0,
+        key="LnozInp_input",
+        label_visibility="collapsed"
+    )
+    if abs(LnozInp - LnozInp_input) > 0.5:
+        LnozInp = LnozInp_input
+    st.sidebar.caption("<div style='text-align: center; color: #6b7280; font-size: 0.75rem;'>mm</div>", unsafe_allow_html=True)
+
+    # Check if geometry parameters changed
+    geometry_changed = (
+        Rthrt != st.session_state.geometry_params['Rthrt'] or
+        CR != st.session_state.geometry_params['CR'] or
+        eps != st.session_state.geometry_params['eps'] or
+        LnozInp != st.session_state.geometry_params['LnozInp'] or
+        RupThroat != st.session_state.geometry_params['RupThroat'] or
+        RdwnThroat != st.session_state.geometry_params['RdwnThroat'] or
+        RchmConv != st.session_state.geometry_params['RchmConv'] or
+        cham_conv_deg != st.session_state.geometry_params['cham_conv_deg'] or
+        LchmOvrDt != st.session_state.geometry_params['LchmOvrDt']
+    )
+
+    # Update session state
+    st.session_state.geometry_params = {
+        'Rthrt': Rthrt,
+        'CR': CR,
+        'eps': eps,
+        'LnozInp': LnozInp,
+        'RupThroat': RupThroat,
+        'RdwnThroat': RdwnThroat,
+        'RchmConv': RchmConv,
+        'cham_conv_deg': cham_conv_deg,
+        'LchmOvrDt': LchmOvrDt
+    }
 
 else:  # Simple Parabolic geometry
     st.sidebar.markdown("""
@@ -698,35 +724,6 @@ else:  # Simple Parabolic geometry
         'xmin': xmin_parab,
         'xmax': xmax_parab
     }
-else:
-    parabolic_changed = False
-
-# Check if geometry parameters changed (for rocketisp)
-if geometry_type == 'rocketisp':
-geometry_changed = (
-    Rthrt != st.session_state.geometry_params['Rthrt'] or
-    CR != st.session_state.geometry_params['CR'] or
-    eps != st.session_state.geometry_params['eps'] or
-    LnozInp != st.session_state.geometry_params['LnozInp'] or
-    RupThroat != st.session_state.geometry_params['RupThroat'] or
-    RdwnThroat != st.session_state.geometry_params['RdwnThroat'] or
-    RchmConv != st.session_state.geometry_params['RchmConv'] or
-    cham_conv_deg != st.session_state.geometry_params['cham_conv_deg'] or
-    LchmOvrDt != st.session_state.geometry_params['LchmOvrDt']
-)
-
-# Update session state
-st.session_state.geometry_params = {
-    'Rthrt': Rthrt,
-    'CR': CR,
-    'eps': eps,
-    'LnozInp': LnozInp,
-    'RupThroat': RupThroat,
-    'RdwnThroat': RdwnThroat,
-    'RchmConv': RchmConv,
-    'cham_conv_deg': cham_conv_deg,
-    'LchmOvrDt': LchmOvrDt
-}
 
 # Validation function
 def validate_geometry_params(Rthrt, CR, eps, LnozInp, RupThroat, RdwnThroat, RchmConv, cham_conv_deg, LchmOvrDt):
