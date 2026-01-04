@@ -10,20 +10,33 @@ import time
 # Page configuration
 st.set_page_config(
     page_title="1D Nozzle Simulator",
-    page_icon="🚀",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Add custom CSS for modern, professional dark theme
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    
+    /* ==========================================================================
+       TYPOGRAPHY SCALE - Organized font sizes using CSS custom properties
+       Only 5 sizes: xs, sm, base, lg, xl
+       ========================================================================== */
+    :root {
+        --font-xs: 0.75rem;    /* 12px - captions, hints */
+        --font-sm: 0.875rem;   /* 14px - labels, secondary text */
+        --font-base: 1rem;     /* 16px - body text, inputs */
+        --font-lg: 1.125rem;   /* 18px - section headers */
+        --font-xl: 1.5rem;     /* 24px - metric values, titles */
+    }
     
     /* Main app background - modern dark */
     .stApp {
         background-color: #0f0f0f;
         color: #ececec;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: var(--font-base);
     }
     
     /* Main container - wider for plot prominence */
@@ -36,25 +49,41 @@ st.markdown("""
         margin: 0 auto;
     }
     
-    /* Typography - Inter font family */
-    * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    /* Typography
+       NOTE: do NOT override font-family globally with '* { ... !important; }'
+       because Streamlit uses Material Symbols icons rendered as text like
+       "keyboard_double_arrow_right" which require the Material Symbols font. */
+
+    /* Ensure Material Symbols render as icons (not raw string names) */
+    span.material-icons,
+    span.material-symbols-outlined,
+    span.material-symbols-rounded,
+    span.material-symbols-sharp,
+    i.material-icons,
+    i.material-symbols-outlined,
+    i.material-symbols-rounded,
+    i.material-symbols-sharp {
+        font-family: "Material Symbols Outlined", "Material Symbols Rounded", "Material Symbols Sharp", "Material Icons" !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        white-space: nowrap !important;
+        direction: ltr !important;
+        -webkit-font-smoothing: antialiased;
     }
     
-    /* Headers */
+    /* Headers - use lg size for consistency */
     h1, h2, h3, h4, h5, h6 {
         color: #ffffff !important;
         font-weight: 600;
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
     
-    h1 {
-        font-weight: 700;
-    }
-    
-    h2 {
-        font-weight: 600;
-    }
+    h1 { font-size: var(--font-xl); font-weight: 700; }
+    h2 { font-size: var(--font-lg); font-weight: 600; }
+    h3 { font-size: var(--font-lg); font-weight: 600; }
     
     /* Text */
     p, div, span {
@@ -63,14 +92,10 @@ st.markdown("""
     
     /* Sidebar styling - narrower */
     [data-testid="stSidebar"] {
-        background-color: #171717;
-        border-right: 1px solid #2d2d2d;
+        background-color: #171717 !important;
+        border-right: 1px solid #2d2d2d !important;
         min-width: 280px !important;
         max-width: 320px !important;
-    }
-    
-    [data-testid="stSidebar"] .css-1d391kg {
-        background-color: #171717;
     }
     
     /* Sidebar text */
@@ -80,11 +105,11 @@ st.markdown("""
         color: #d1d5db !important;
     }
     
-    /* Sidebar section headers */
+    /* Sidebar section headers - lg size */
     [data-testid="stSidebar"] h3 {
         color: #ffffff !important;
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: var(--font-lg);
         margin-top: 1rem;
         margin-bottom: 0.75rem;
     }
@@ -98,7 +123,7 @@ st.markdown("""
         margin-bottom: 12px;
     }
     
-    /* Metrics */
+    /* Metrics - xl for values, sm for labels */
     .stMetric {
         background-color: #1a1a1a;
         color: #ffffff;
@@ -115,14 +140,24 @@ st.markdown("""
     
     .stMetric label {
         color: #9ca3af !important;
-        font-size: 0.875rem;
+        font-size: var(--font-sm);
         font-weight: 500;
     }
     
     .stMetric [data-testid="stMetricValue"] {
         color: #06b6d4 !important;
-        font-size: 1.5rem;
+        font-size: var(--font-xl);
         font-weight: 600;
+    }
+    
+    /* All form labels - consistent sm size */
+    .stSlider label,
+    .stNumberInput label,
+    .stSelectbox label,
+    .stRadio label {
+        color: #d1d5db !important;
+        font-size: var(--font-sm);
+        font-weight: 500;
     }
     
     /* Sliders - modern styling */
@@ -130,29 +165,19 @@ st.markdown("""
         padding: 0.75rem 0;
     }
     
-    .stSlider label {
-        color: #d1d5db !important;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
     /* Number input styling */
     .stNumberInput {
         padding: 0.5rem 0;
     }
     
-    .stNumberInput label {
-        color: #9ca3af !important;
-        font-size: 0.85rem;
-    }
-    
-    /* Buttons */
+    /* Buttons - base size */
     .stButton > button {
         background-color: #1f1f1f;
         color: #ffffff;
         border: 1px solid #2d2d2d;
         border-radius: 6px;
         padding: 0.5rem 1rem;
+        font-size: var(--font-base);
         font-weight: 500;
         transition: all 0.2s ease;
     }
@@ -188,9 +213,10 @@ st.markdown("""
         border-radius: 4px;
     }
     
-    /* Captions */
+    /* Captions - xs size */
     .stCaption {
         color: #9ca3af !important;
+        font-size: var(--font-xs);
     }
     
     /* Markdown text */
@@ -201,10 +227,51 @@ st.markdown("""
     /* Remove Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
     
-    /* Smooth transitions */
-    * {
+    /* Keep Streamlit header visible so the sidebar collapse/expand toggle works.
+       Make it visually minimal (no big bar). */
+    header {visibility: visible;}
+    [data-testid="stHeader"] {
+        background: transparent;
+        height: 0;
+    }
+    [data-testid="stToolbar"] {
+        right: 0.5rem;
+    }
+
+    /* Hide Streamlit chrome (deploy/menu/status), but keep the sidebar toggle */
+    [data-testid="stToolbarActions"],
+    [data-testid="stToolbarActionItems"],
+    [data-testid="stToolbarActionItems"] * {
+        display: none !important;
+    }
+    [data-testid="stStatusWidget"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+
+    /* Ensure sidebar collapse/expand button remains visible */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapseButton"] * {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Hide keyboard-shortcuts UI (plain sidebar) */
+    button[title*="keyboard" i],
+    button[aria-label*="keyboard" i],
+    button[title*="shortcut" i],
+    button[aria-label*="shortcut" i] {
+        display: none !important;
+    }
+    
+    
+    /* Smooth transitions (avoid global '*' to reduce side effects) */
+    button,
+    input,
+    select,
+    textarea,
+    .stMetric,
+    .param-group {
         transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
     
@@ -227,37 +294,6 @@ st.markdown("""
         background: #525252;
     }
     </style>
-    """, unsafe_allow_html=True)
-
-# Header section - reduced height, modern styling
-st.markdown("""
-    <div style="
-        text-align: center; 
-        padding: 24px 30px; 
-        background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-        border-radius: 12px;
-        margin-bottom: 30px;
-        border: 1px solid #2d2d2d;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    ">
-        <h1 style="
-            color: #ffffff; 
-            margin-bottom: 8px; 
-            font-size: 2.2em;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        ">🚀 Quasi-1D Nozzle Flow Simulator</h1>
-        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #2d2d2d;">
-            <p style="color: #9ca3af; font-size: 0.95em; margin: 4px 0; font-weight: 400;">
-                <span style="color: #6b7280;">Author:</span> 
-                <span style="color: #ffffff; font-weight: 600; margin-left: 6px;">Prof. Shaowu Pan</span>
-            </p>
-            <p style="color: #6b7280; font-size: 0.9em; margin: 2px 0; font-weight: 300;">
-                Rensselaer Polytechnic Institute
-            </p>
-        </div>
-    </div>
     """, unsafe_allow_html=True)
 
 # Default preset nozzle configuration (SSME)
@@ -291,6 +327,38 @@ if 'parabolic_params' not in st.session_state:
         'xmax': 1.0
     }
 
+# Initialize flow parameters
+if 'gamma' not in st.session_state:
+    st.session_state.gamma = 1.4  # Default ratio of specific heats (air)
+if 'R' not in st.session_state:
+    st.session_state.R = 287  # Default gas constant (J/(kg·K) for air)
+
+
+# Banner header in sidebar at top
+st.sidebar.markdown("""
+    <div style="
+        padding: 12px 0;
+        border-bottom: 1px solid #2d2d2d;
+        margin-bottom: 16px;
+        margin-top: 0 !important;
+    ">
+        <h3 style="
+            color: #ffffff; 
+            margin: 0 0 12px 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+        ">Quasi-1D Nozzle Flow Simulator</h3>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="https://faculty.rpi.edu/sites/default/files/2022-09/WeChat%20Image_20220914114417-min.jpg" 
+                 alt="Prof. Shaowu Pan"
+                 style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid #2d2d2d;">
+            <div>
+                <p style="color: #d1d5db; font-size: 0.875rem; margin: 0; font-weight: 500;">Prof. Shaowu Pan</p>
+                <p style="color: #6b7280; font-size: 0.75rem; margin: 0; line-height: 1.4;">MANE, Rensselaer Polytechnic Institute</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Geometry parameters section with visual grouping
 st.sidebar.markdown("### Nozzle Geometry")
@@ -311,7 +379,7 @@ geometry_type_changed = st.session_state.get('geometry_type') != geometry_type
 st.session_state.geometry_type = geometry_type
 
 # Reset to default button
-if st.sidebar.button("🔄 Reset to Default", use_container_width=True, type="secondary"):
+if st.sidebar.button("🔄 Reset to Default", type="secondary"):
     if geometry_type == 'SSME':
         st.session_state.geometry_params = DEFAULT_PRESET.copy()
     else:
@@ -331,7 +399,7 @@ if geometry_type == 'SSME':
     # Chamber Geometry Group
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Chamber Geometry</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Chamber Geometry</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -384,7 +452,7 @@ if geometry_type == 'SSME':
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Throat Region</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Throat Region</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -410,7 +478,7 @@ if geometry_type == 'SSME':
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Expansion Section</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Expansion Section</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -462,10 +530,10 @@ if geometry_type == 'SSME':
 else:  # Simple Parabolic geometry
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.9rem; margin: 0 0 8px 0;">Parabolic Parameters</p>
-            <p style="color: #9ca3af; font-size: 0.8rem; margin: 0;">$A(x) = a(x-b)^2 + c$</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Parabolic Parameters</p>
         </div>
         """, unsafe_allow_html=True)
+    st.sidebar.latex(r"A(x) = a(x-b)^2 + c")
     
     a = st.sidebar.number_input(
         r"Coefficient $a$",
@@ -581,6 +649,10 @@ else:
 
 geometry_changed_check = geometry_changed if geometry_type == 'SSME' else parabolic_changed
 
+# Get flow parameters from session state (will be updated by inputs later)
+current_gamma = st.session_state.get('gamma', 1.4)
+current_R = st.session_state.get('R', 287)
+
 if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.session_state) and not validation_errors:
     try:
         start_time = time.time()
@@ -602,11 +674,9 @@ if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.sessio
                 xmax=st.session_state.parabolic_params['xmax']
             )
         
-        # Default parameters
-        g, R = 1.4, 287
-        
+        # Use flow parameters from session state
         # Create nozzle instance
-        nozzle = Nozzle(A, xmin=xmin, xmax=xmax, gamma=g, R=R)
+        nozzle = Nozzle(A, xmin=xmin, xmax=xmax, gamma=current_gamma, R=current_R)
         st.session_state.nozzle = nozzle
         st.session_state.crit_p_ratio_1 = nozzle.crit_p_ratio_1
         st.session_state.crit_p_ratio_2 = nozzle.crit_p_ratio_2
@@ -615,6 +685,8 @@ if (geometry_changed_check or geometry_type_changed or 'nozzle' not in st.sessio
         st.session_state.sim_status = "idle"
         st.session_state.geometry_calc_time = calc_time
         st.session_state.geometry_type = geometry_type
+        st.session_state.gamma = current_gamma
+        st.session_state.R = current_R
     except Exception as e:
         st.error(f"Failed to create nozzle geometry: {str(e)}")
         st.session_state.sim_status = "error"
@@ -632,6 +704,64 @@ else:
 # Sidebar for controls
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.markdown("### Flow Parameters")
+
+# Gamma (ratio of specific heats) input
+gamma = st.sidebar.number_input(
+    r"$\gamma$ (Ratio of Specific Heats)",
+    min_value=1.1,
+    max_value=1.67,
+    value=float(st.session_state.gamma),
+    step=0.01,
+    help="Ratio of specific heats (cp/cv). Must be > 1."
+)
+st.sidebar.caption("**Typical values:** Air = 1.40 · Monatomic = 1.67 · Combustion = 1.2–1.3")
+
+# Gas constant R is hidden since it doesn't affect M(x) or p/p0(x)
+# Keep using default value from session state
+R = st.session_state.R
+
+# Check if flow parameters changed and recreate nozzle if needed
+flow_params_changed = (
+    gamma != st.session_state.get('gamma', gamma)
+)
+
+if flow_params_changed and 'nozzle' in st.session_state and not validation_errors:
+    try:
+        # Get current geometry
+        if st.session_state.geometry_type == 'SSME':
+            G = Geometry(
+                Rthrt=st.session_state.geometry_params['Rthrt'],
+                CR=st.session_state.geometry_params['CR'],
+                eps=st.session_state.geometry_params['eps'],
+                LnozInp=st.session_state.geometry_params['LnozInp'],
+                RupThroat=st.session_state.geometry_params['RupThroat'],
+                RdwnThroat=st.session_state.geometry_params['RdwnThroat'],
+                RchmConv=st.session_state.geometry_params['RchmConv'],
+                cham_conv_deg=st.session_state.geometry_params['cham_conv_deg'],
+                LchmOvrDt=st.session_state.geometry_params['LchmOvrDt']
+            )
+            A, xmin, xmax = get_A(G)
+        else:
+            A, xmin, xmax = get_parabolic_A(
+                a=st.session_state.parabolic_params['a'],
+                b=st.session_state.parabolic_params['b'],
+                c=st.session_state.parabolic_params['c'],
+                xmin=st.session_state.parabolic_params['xmin'],
+                xmax=st.session_state.parabolic_params['xmax']
+            )
+        
+        # Recreate nozzle with new flow parameters
+        nozzle = Nozzle(A, xmin=xmin, xmax=xmax, gamma=gamma, R=R)
+        st.session_state.nozzle = nozzle
+        st.session_state.crit_p_ratio_1 = nozzle.crit_p_ratio_1
+        st.session_state.crit_p_ratio_2 = nozzle.crit_p_ratio_2
+        st.session_state.crit_p_ratio_3 = nozzle.crit_p_ratio_3
+        st.session_state.gamma = gamma
+        st.session_state.R = R
+        # Update nozzle variable for current run
+        nozzle = st.session_state.nozzle
+    except Exception as e:
+        st.error(f"Failed to update nozzle with new flow parameters: {str(e)}")
 
 # Pressure ratio slider with log scale for fine control near 0
 # Use log10 space: from log10(1e-7) = -7 to log10(1) = 0
@@ -656,23 +786,6 @@ log_p_ratio = st.sidebar.slider(
 
 # Convert from log space to linear space for display and calculations
 p_ratio = 10.0 ** log_p_ratio
-
-# Display the actual linear value
-st.sidebar.markdown(f"""
-    <div style="
-        background-color: #1f1f1f;
-        padding: 10px;
-        border-radius: 6px;
-        margin: 8px 0;
-        border: 1px solid #2d2d2d;
-        text-align: center;
-    ">
-        <p style="color: #9ca3af; font-size: 0.8rem; margin: 0 0 4px 0;">Actual Value</p>
-        <p style="color: #06b6d4; font-size: 1rem; font-weight: 600; margin: 0;">
-            $p_b/p_0 = {p_ratio:.6f}$
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 # Update session state
 st.session_state.log_p_ratio = log_p_ratio
@@ -700,22 +813,13 @@ st.sidebar.markdown(f"""
         margin: 8px 0;
         border: 1px solid #2d2d2d;
     ">
-        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0 0 6px 0;">Flow Regime</p>
+        <p style="color: #9ca3af; font-size: 0.875rem; margin: 0 0 6px 0;">Flow Regime</p>
         <p style="color: #ffffff; font-size: 1rem; font-weight: 500; margin: 0;">
             {regime_color} {regime}
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-
-# Main plot area - wider layout
-st.markdown("""
-    <div style="margin-bottom: 24px;">
-        <h2 style="color: #ffffff; font-size: 1.5em; font-weight: 600; margin-bottom: 4px;">
-            Flow Profile
-        </h2>
-    </div>
-    """, unsafe_allow_html=True)
 
 # Generate plot using Plotly
 try:
@@ -730,15 +834,17 @@ except Exception as e:
 # Use wider container for plot
 plot_col1, plot_col2, plot_col3 = st.columns([0.5, 9, 0.5])
 with plot_col2:
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
-# Additional information
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.metric(r"$p_b/p_0$", f"{p_ratio:.4f}")
-with col2:
-    st.metric(r"$(p_b/p_0)_1$ (Choked)", f"{nozzle.crit_p_ratio_1:.4f}")
-with col3:
-    st.metric(r"$(p_b/p_0)_2$ (Normal Shock)", f"{nozzle.crit_p_ratio_2:.4f}")
-with col4:
-    st.metric(r"$(p_b/p_0)_3$ (Shock Free)", f"{nozzle.crit_p_ratio_3:.4f}")
+# Additional information - single row, wider to accommodate full text
+metric_col1, metric_col2, metric_col3 = st.columns([0.5, 9.0, 0.5])
+with metric_col2:
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(r"$p_b/p_0$", f"{p_ratio:.4f}")
+    with col2:
+        st.metric(r"$(p_b/p_0)_1$ (Choked)", f"{nozzle.crit_p_ratio_1:.4f}")
+    with col3:
+        st.metric(r"$(p_b/p_0)_2$ (Normal Shock at Exit)", f"{nozzle.crit_p_ratio_2:.4f}")
+    with col4:
+        st.metric(r"$(p_b/p_0)_3$ (Shock Free)", f"{nozzle.crit_p_ratio_3:.4f}")

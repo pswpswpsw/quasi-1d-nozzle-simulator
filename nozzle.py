@@ -69,22 +69,28 @@ class Nozzle(object):
         temp_ratio = pressure_ratio * (2 + (gamma - 1.0) * M1**2) / ((gamma + 1.0) * M1**2)
         return cp * np.log(temp_ratio) - R * np.log(pressure_ratio)
 
+    def _calculate_flow_profile(self, pb_p0_ratio):
+        """Compute M(x) and p/p0(x) for the given back-pressure ratio.
 
-    def plot_flow_profile(self, pb_p0_ratio):
+        Returns:
+            (M_array, p_array, viz_data)
+        """
+        if pb_p0_ratio <= 0 or pb_p0_ratio > 1:
+            raise ValueError(f"Pressure ratio must be between 0 and 1, got {pb_p0_ratio}")
+
         flag_draw_oshock = False 
         flag_draw_fan = False
         fan_alphas = None
-        if pb_p0_ratio > self.crit_p_ratio_1:
-            # Subsonic Throat
+        beta = None
+        x_extended = None
 
-            # first solve M_e using isentropic flow condition
-            p0_pb = 1.0/pb_p0_ratio
-            m_exit = np.sqrt((p0_pb**((self.g-1)/(self.g)) - 1)*2/(self.g-1))
-            # infer A over A star via area mach relation
+        if pb_p0_ratio > self.crit_p_ratio_1:
+            # Subsonic throat
+            p0_pb = 1.0 / pb_p0_ratio
+            m_exit = np.sqrt((p0_pb ** ((self.g - 1) / (self.g)) - 1) * 2 / (self.g - 1))
             Ae_over_A_star = self.area_mach_relation(m_exit, self.g)
             A_over_A_star = self.area_array / self.area_exit * Ae_over_A_star
 
-            # solving M(x) from A over A star 
             M_array = np.zeros_like(self.xeval)
             p_array = np.zeros_like(self.xeval)
             
@@ -92,119 +98,111 @@ class Nozzle(object):
                 if i < len(A_over_A_star):
                     ratio = A_over_A_star[i]
                     M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                    p_array[i] = (1.0 + 0.5*(self.g - 1.0)*M_array[i]**2) ** (-self.g/(self.g - 1.0))
+                    p_array[i] = (1.0 + 0.5 * (self.g - 1.0) * M_array[i] ** 2) ** (-self.g / (self.g - 1.0))
                 else:
-                    M_array[i] = M_array[len(A_over_A_star)-1]
-                    p_array[i] = p_array[len(A_over_A_star)-1]
+                    M_array[i] = M_array[len(A_over_A_star) - 1]
+                    p_array[i] = p_array[len(A_over_A_star) - 1]
             
         elif pb_p0_ratio > self.crit_p_ratio_2:
-            # sonic throat but normal shock inside expansion
-            # search for x_shock >= x_throat, but x_shock < x_max
-            # we will try to define a function of x_shock, and try to match the pb_p0_ratio with the normal shock condition
+            # Sonic throat with normal shock inside expansion
             def M_and_p_given_x_shock(x_shock):
                 last_index_before_shock = np.where(self.x < x_shock)[0][-1]
                 M_array = np.zeros_like(self.xeval)
                 p_array = np.zeros_like(self.xeval)
                 A_over_A_star = self.area_array / self.area_throat 
 
-                # for i, ratio in enumerate(A_over_A_star):
                 for i in range(len(self.xeval)):
                     if i < len(self.x):
                         ratio = A_over_A_star[i]
                         
                         if self.x[i] < self.x_throat:
                             M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                            p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
+                            p_array[i] = 1 / (1 + (self.g - 1) / 2 * M_array[i] ** 2) ** (self.g / (self.g - 1))
                         elif self.x[i] < x_shock:
                             M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=False)
-                            p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))    
+                            p_array[i] = 1 / (1 + (self.g - 1) / 2 * M_array[i] ** 2) ** (self.g / (self.g - 1))
                         else:
-                            # get preshock Mach number
                             M1 = M_array[last_index_before_shock]
-                            # after the shock 
-                            # first calculate total pressure loss
                             delta_s = self.entropy_jump_normal_shock(M1, self.g, R=self.R)
-                            p0_new_p0 = np.exp(-delta_s/self.R)
-                            # p0_new_p_exit = p0_new_p0 * p0_pb
-                            M2 = np.sqrt((1+(self.g-1)/2*M1**2)/(self.g*M1**2-(self.g-1)/2))
+                            p0_new_p0 = np.exp(-delta_s / self.R)
+                            M2 = np.sqrt((1 + (self.g - 1) / 2 * M1 ** 2) / (self.g * M1 ** 2 - (self.g - 1) / 2))
     
-                            # A / A_shock
-                            A_over_A_shock = ratio*self.area_throat / self.get_area(self.x[last_index_before_shock+1])
-    
-                            # A_shock / A_star
+                            A_over_A_shock = ratio * self.area_throat / self.get_area(self.x[last_index_before_shock + 1])
                             A_shock_over_A_star = self.area_mach_relation(M2, self.g)
-    
-                            # A / A_star
                             A_over_A_star_tmp = A_over_A_shock * A_shock_over_A_star
     
-                            # inverse modeling to find M 
                             M_array[i] = self.solve_mach_number_from_area_ratio(A_over_A_star_tmp, self.g, is_subsonic=True)
-                            p_array[i] = p0_new_p0 * (1 + (self.g-1)/2*M_array[i]**2)**(-self.g/(self.g-1))
+                            p_array[i] = p0_new_p0 * (1 + (self.g - 1) / 2 * M_array[i] ** 2) ** (-self.g / (self.g - 1))
                     else:
-                        M_array[i] = M_array[len(self.x)-1]
-                        p_array[i] = p_array[len(self.x)-1]
+                        M_array[i] = M_array[len(self.x) - 1]
+                        p_array[i] = p_array[len(self.x) - 1]
                 return M_array, p_array
 
-            # find x_shock 
-            mismatch_predicted_exit_pressure = lambda x_shock: M_and_p_given_x_shock(x_shock)[1][len(self.x)-1] - pb_p0_ratio
-            x_shock = scipy.optimize.root_scalar(mismatch_predicted_exit_pressure, 
+            mismatch_predicted_exit_pressure = lambda x_shock: M_and_p_given_x_shock(x_shock)[1][len(self.x) - 1] - pb_p0_ratio
+            x_shock = scipy.optimize.root_scalar(
+                mismatch_predicted_exit_pressure,
                                                  bracket=[self.x_throat, self.xmax], 
-                                                 method='brentq', maxiter=1000,xtol=1e-7,rtol=1e-7).root
+                method="brentq",
+                maxiter=1000,
+                xtol=1e-7,
+                rtol=1e-7,
+            ).root
             M_array, p_array = M_and_p_given_x_shock(x_shock)
 
         elif pb_p0_ratio > self.crit_p_ratio_3:
-            # critical case 3 is shockfree. so current pb is still higher, we are not there yet
-            # sonic throat
-            # oblique shock at the exit 
+            # Sonic throat - oblique shock at exit
             flag_draw_oshock = True
             
             M_array = np.zeros_like(self.xeval)
             p_array = np.zeros_like(self.xeval)
             A_over_A_star = self.area_array / self.area_throat 
-
-            r_exit = np.sqrt(self.area_array/np.pi)[-1]
+            r_exit = np.sqrt(self.area_array / np.pi)[-1]
             
             for i in range(len(self.xeval)):
                 if i < len(self.x):
                     ratio = A_over_A_star[i]
                     if self.x[i] < self.x_throat:
                         M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                        p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
+                        p_array[i] = 1 / (1 + (self.g - 1) / 2 * M_array[i] ** 2) ** (self.g / (self.g - 1))
                     else:
                         M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=False)
-                        p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
-                elif i==len(self.x):
-                    # at the exit, compute a oblique shock, we need to find M_{n,1}
-                    M_exit = M_array[len(self.x)-1]
-                    p_exit = p_array[len(self.x)-1]
-                    pb_pe = pb_p0_ratio/p_exit
-                    Mn1 = np.sqrt((pb_pe - 1)*(self.g+1)/(self.g*2) + 1)
-                    Mn2 = np.sqrt((1+(self.g-1)/2*Mn1**2)/(self.g*Mn1**2-(self.g-1)/2))
-                    beta = np.arcsin(Mn1/M_exit)
-                    # solve delta/theta deflection angle
-                    tan_theta = 2/np.tan(beta)*(M_exit**2*np.sin(beta)**2 - 1)/(M_exit**2*(self.g + np.cos(2*beta))+2)
+                        p_array[i] = 1 / (1 + (self.g - 1) / 2 * M_array[i] ** 2) ** (self.g / (self.g - 1))
+                elif i == len(self.x):
+                    M_exit = M_array[len(self.x) - 1]
+                    p_exit = p_array[len(self.x) - 1]
+                    pb_pe = pb_p0_ratio / p_exit
+                    Mn1 = np.sqrt((pb_pe - 1) * (self.g + 1) / (self.g * 2) + 1)
+                    Mn2 = np.sqrt((1 + (self.g - 1) / 2 * Mn1 ** 2) / (self.g * Mn1 ** 2 - (self.g - 1) / 2))
+                    beta = np.arcsin(Mn1 / M_exit)
+                    tan_theta = (
+                        2
+                        / np.tan(beta)
+                        * (M_exit**2 * np.sin(beta) ** 2 - 1)
+                        / (M_exit**2 * (self.g + np.cos(2 * beta)) + 2)
+                    )
                     theta = np.arctan(tan_theta)
-                    x_extended = self.xmax + r_exit/np.tan(beta)
+                    x_extended = self.xmax + r_exit / np.tan(beta)
                     M_array[i] = M_exit
                     p_array[i] = p_exit   
-                elif self.xeval[i] >= x_extended:
-                    M_array[i] = Mn2/np.sin(beta-theta)
+                elif x_extended is not None and self.xeval[i] >= x_extended:
+                    # beta/theta must have been computed at i == len(self.x)
+                    M_array[i] = Mn2 / np.sin(beta - theta)
                     p_array[i] = pb_p0_ratio
                 else:
-                    M_array[i] = M_array[len(self.x)-1]
-                    p_array[i] = p_array[len(self.x)-1]   
+                    M_array[i] = M_array[len(self.x) - 1]
+                    p_array[i] = p_array[len(self.x) - 1]
+
         else:
-            # expansion wave (underexpanded jet)
-        
+            # Underexpanded jet - expansion fan
             g = self.g
             M_array = np.zeros_like(self.xeval)
             p_array = np.zeros_like(self.xeval)
             A_over_A_star = self.area_array / self.area_throat
         
             def p_over_p0(M):
-                return (1.0 + 0.5*(g - 1.0)*M**2) ** (-g/(g - 1.0))
+                return (1.0 + 0.5 * (g - 1.0) * M**2) ** (-g / (g - 1.0))
         
-            # --- nozzle interior (isentropic, choked) ---
+            # nozzle interior (isentropic, choked)
             for i in range(len(self.x)):
                 ratio = A_over_A_star[i]
                 if self.x[i] < self.x_throat:
@@ -215,76 +213,72 @@ class Nozzle(object):
                 M_array[i] = M
                 p_array[i] = p_over_p0(M)
         
-            # --- exit state ---
+            # exit state
             i_exit = len(self.x) - 1
             M_exit = M_array[i_exit]
             p_exit = p_array[i_exit]  # pe/p0
         
-            # --- far-field Mach matching pb/p0 (isentropic inversion) ---
-            M_far = np.sqrt((2.0/(g - 1.0)) * (pb_p0_ratio ** (-(g - 1.0)/g) - 1.0))
+            # far-field Mach matching pb/p0 (isentropic inversion)
+            M_far = np.sqrt((2.0 / (g - 1.0)) * (pb_p0_ratio ** (-(g - 1.0) / g) - 1.0))
         
-            # --- centerline hit region based on fan head/tail reaching centerline ---
             x_exit = self.xmax
             r_exit = np.sqrt(self.area_exit / np.pi)
         
             mu_exit = np.arcsin(np.clip(1.0 / M_exit, 0.0, 1.0))  # head (at exit state)
-            mu_far  = np.arcsin(np.clip(1.0 / M_far,  0.0, 1.0))  # tail (fully expanded)
+            mu_far = np.arcsin(np.clip(1.0 / M_far, 0.0, 1.0))  # tail (fully expanded)
         
-            # centerline first affected when head hits:
             x_head = x_exit + r_exit / np.tan(mu_exit)
-            # centerline fully expanded when tail hits:
             x_tail = x_exit + r_exit / np.tan(mu_far)
         
-            # your plotting window might not reach x_tail (esp. tiny pb/p0)
             x_end = self.xeval[-1]
             x_tail_eff = min(x_tail, x_end)
         
             def is_hit_by_fan_centerline(xq):
                 return (xq >= x_head) and (xq <= x_tail_eff)
         
-            # --- fill extended region using fan theory on centerline ---
+            # fill extended region using fan theory on centerline
             for i in range(len(self.x), len(self.xeval)):
                 xq = self.xeval[i]
         
                 if xq < x_head:
-                    # not hit yet
                     M = M_exit
                     p = p_exit
-        
                 elif is_hit_by_fan_centerline(xq):
-                    # hit region: use Mach-line geometry -> Mach angle -> Mach number
                     dx = max(xq - x_exit, 1e-12)
-                    mu = np.arctan(r_exit / dx)            # ray angle from lip to centerline point
-                    mu = np.clip(mu, mu_far, mu_exit)      # confine to fan [tail, head]
-                    M  = 1.0 / np.sin(mu)                  # M from Mach angle
-        
-                    # (optional) also clamp to [M_exit, M_far] for numerical safety
+                    mu = np.arctan(r_exit / dx)
+                    mu = np.clip(mu, mu_far, mu_exit)
+                    M = 1.0 / np.sin(mu)
                     M = float(np.clip(M, M_exit, M_far))
-        
                     p = p_over_p0(M)
-        
                 else:
-                    # past tail (only possible if x_tail is inside xeval)
                     if x_tail <= x_end:
                         M = M_far
                         p = pb_p0_ratio
                     else:
-                        # window ends before tail hits; keep last value
                         M = M_array[i - 1]
                         p = p_array[i - 1]
         
                 M_array[i] = M
                 p_array[i] = p
         
-            # only enforce pb exactly if the window actually reaches the tail
             if x_tail <= x_end:
                 M_array[-1] = M_far
                 p_array[-1] = pb_p0_ratio
-            # --- for visualization (fan rays) ---
+
             flag_draw_fan = True
             fan_alphas = np.linspace(mu_far, mu_exit, 7)  # tail -> head
 
-        # start to draw
+        viz_data = {
+            "flag_draw_oshock": flag_draw_oshock,
+            "flag_draw_fan": flag_draw_fan,
+            "fan_alphas": fan_alphas,
+            "beta": beta,
+            "x_extended": x_extended,
+        }
+        return M_array, p_array, viz_data
+
+
+    def plot_flow_profile(self, pb_p0_ratio):
         """Plot flow profile using matplotlib."""
         M_array, p_array, viz_data = self._calculate_flow_profile(pb_p0_ratio)
         flag_draw_oshock = viz_data['flag_draw_oshock']
@@ -371,176 +365,12 @@ class Nozzle(object):
 
     def plot_flow_profile_plotly(self, pb_p0_ratio):
         """Create Plotly figure for flow profile."""
-        # Validate input
-        if pb_p0_ratio <= 0 or pb_p0_ratio > 1:
-            raise ValueError(f"Pressure ratio must be between 0 and 1, got {pb_p0_ratio}")
-        
-        # Reuse calculation from plot_flow_profile by calling it and extracting data
-        # We'll duplicate the calculation logic here for now (can be refactored later)
         try:
-            flag_draw_oshock = False 
-            flag_draw_fan = False
-            fan_alphas = None
-            beta = None
-            x_extended = None
-            
-            if pb_p0_ratio > self.crit_p_ratio_1:
-                # Subsonic Throat
-                p0_pb = 1.0/pb_p0_ratio
-                m_exit = np.sqrt((p0_pb**((self.g-1)/(self.g)) - 1)*2/(self.g-1))
-                Ae_over_A_star = self.area_mach_relation(m_exit, self.g)
-                A_over_A_star = self.area_array / self.area_exit * Ae_over_A_star
-
-                M_array = np.zeros_like(self.xeval)
-                p_array = np.zeros_like(self.xeval)
-                
-                for i in range(len(self.xeval)):
-                    if i < len(A_over_A_star):
-                        ratio = A_over_A_star[i]
-                        M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                        p_array[i] = (1.0 + 0.5*(self.g - 1.0)*M_array[i]**2) ** (-self.g/(self.g - 1.0))
-                    else:
-                        M_array[i] = M_array[len(A_over_A_star)-1]
-                        p_array[i] = p_array[len(A_over_A_star)-1]
-                
-            elif pb_p0_ratio > self.crit_p_ratio_2:
-                # Normal shock inside expansion
-                def M_and_p_given_x_shock(x_shock):
-                    last_index_before_shock = np.where(self.x < x_shock)[0][-1]
-                    M_array = np.zeros_like(self.xeval)
-                    p_array = np.zeros_like(self.xeval)
-                    A_over_A_star = self.area_array / self.area_throat 
-
-                    for i in range(len(self.xeval)):
-                        if i < len(self.x):
-                            ratio = A_over_A_star[i]
-                            
-                            if self.x[i] < self.x_throat:
-                                M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                                p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
-                            elif self.x[i] < x_shock:
-                                M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=False)
-                                p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))    
-                            else:
-                                M1 = M_array[last_index_before_shock]
-                                delta_s = self.entropy_jump_normal_shock(M1, self.g, R=self.R)
-                                p0_new_p0 = np.exp(-delta_s/self.R)
-                                M2 = np.sqrt((1+(self.g-1)/2*M1**2)/(self.g*M1**2-(self.g-1)/2))
-                                A_over_A_shock = ratio*self.area_throat / self.get_area(self.x[last_index_before_shock+1])
-                                A_shock_over_A_star = self.area_mach_relation(M2, self.g)
-                                A_over_A_star_tmp = A_over_A_shock * A_shock_over_A_star
-                                M_array[i] = self.solve_mach_number_from_area_ratio(A_over_A_star_tmp, self.g, is_subsonic=True)
-                                p_array[i] = p0_new_p0 * (1 + (self.g-1)/2*M_array[i]**2)**(-self.g/(self.g-1))
-                        else:
-                            M_array[i] = M_array[len(self.x)-1]
-                            p_array[i] = p_array[len(self.x)-1]
-                    return M_array, p_array
-
-                mismatch_predicted_exit_pressure = lambda x_shock: M_and_p_given_x_shock(x_shock)[1][len(self.x)-1] - pb_p0_ratio
-                x_shock = scipy.optimize.root_scalar(mismatch_predicted_exit_pressure, 
-                                                     bracket=[self.x_throat, self.xmax], 
-                                                     method='brentq', maxiter=1000,xtol=1e-7,rtol=1e-7).root
-                M_array, p_array = M_and_p_given_x_shock(x_shock)
-
-            elif pb_p0_ratio > self.crit_p_ratio_3:
-                # Oblique shock at exit
-                flag_draw_oshock = True
-                
-                M_array = np.zeros_like(self.xeval)
-                p_array = np.zeros_like(self.xeval)
-                A_over_A_star = self.area_array / self.area_throat 
-                r_exit = np.sqrt(self.area_array/np.pi)[-1]
-                
-                for i in range(len(self.xeval)):
-                    if i < len(self.x):
-                        ratio = A_over_A_star[i]
-                        if self.x[i] < self.x_throat:
-                            M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=True)
-                            p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
-                        else:
-                            M_array[i] = self.solve_mach_number_from_area_ratio(ratio, self.g, is_subsonic=False)
-                            p_array[i] = 1/(1+(self.g-1)/2*M_array[i]**2)**((self.g)/(self.g-1))
-                    elif i==len(self.x):
-                        M_exit = M_array[len(self.x)-1]
-                        p_exit = p_array[len(self.x)-1]
-                        pb_pe = pb_p0_ratio/p_exit
-                        Mn1 = np.sqrt((pb_pe - 1)*(self.g+1)/(self.g*2) + 1)
-                        Mn2 = np.sqrt((1+(self.g-1)/2*Mn1**2)/(self.g*Mn1**2-(self.g-1)/2))
-                        beta = np.arcsin(Mn1/M_exit)
-                        tan_theta = 2/np.tan(beta)*(M_exit**2*np.sin(beta)**2 - 1)/(M_exit**2*(self.g + np.cos(2*beta))+2)
-                        theta = np.arctan(tan_theta)
-                        x_extended = self.xmax + r_exit/np.tan(beta)
-                        M_array[i] = M_exit
-                        p_array[i] = p_exit   
-                    elif self.xeval[i] >= x_extended:
-                        M_array[i] = Mn2/np.sin(beta-theta)
-                        p_array[i] = pb_p0_ratio
-                    else:
-                        M_array[i] = M_array[len(self.x)-1]
-                        p_array[i] = p_array[len(self.x)-1]   
-            else:
-                # Expansion fan
-                g = self.g
-                M_array = np.zeros_like(self.xeval)
-                p_array = np.zeros_like(self.xeval)
-                A_over_A_star = self.area_array / self.area_throat
-            
-                def p_over_p0(M):
-                    return (1.0 + 0.5*(g - 1.0)*M**2) ** (-g/(g - 1.0))
-            
-                for i in range(len(self.x)):
-                    ratio = A_over_A_star[i]
-                    if self.x[i] < self.x_throat:
-                        M = self.solve_mach_number_from_area_ratio(ratio, g, is_subsonic=True)
-                    else:
-                        M = self.solve_mach_number_from_area_ratio(ratio, g, is_subsonic=False)
-                    M_array[i] = M
-                    p_array[i] = p_over_p0(M)
-            
-                i_exit = len(self.x) - 1
-                M_exit = M_array[i_exit]
-                p_exit = p_array[i_exit]
-                M_far = np.sqrt((2.0/(g - 1.0)) * (pb_p0_ratio ** (-(g - 1.0)/g) - 1.0))
-                x_exit = self.xmax
-                r_exit = np.sqrt(self.area_exit / np.pi)
-                mu_exit = np.arcsin(np.clip(1.0 / M_exit, 0.0, 1.0))
-                mu_far  = np.arcsin(np.clip(1.0 / M_far,  0.0, 1.0))
-                x_head = x_exit + r_exit / np.tan(mu_exit)
-                x_tail = x_exit + r_exit / np.tan(mu_far)
-                x_end = self.xeval[-1]
-                x_tail_eff = min(x_tail, x_end)
-            
-                def is_hit_by_fan_centerline(xq):
-                    return (xq >= x_head) and (xq <= x_tail_eff)
-            
-                for i in range(len(self.x), len(self.xeval)):
-                    xq = self.xeval[i]
-                    if xq < x_head:
-                        M = M_exit
-                        p = p_exit
-                    elif is_hit_by_fan_centerline(xq):
-                        dx = max(xq - x_exit, 1e-12)
-                        mu = np.arctan(r_exit / dx)
-                        mu = np.clip(mu, mu_far, mu_exit)
-                        M  = 1.0 / np.sin(mu)
-                        M = float(np.clip(M, M_exit, M_far))
-                        p = p_over_p0(M)
-                    else:
-                        if x_tail <= x_end:
-                            M = M_far
-                            p = pb_p0_ratio
-                        else:
-                            M = M_array[i - 1]
-                            p = p_array[i - 1]
-                    M_array[i] = M
-                    p_array[i] = p
-            
-                if x_tail <= x_end:
-                    M_array[-1] = M_far
-                    p_array[-1] = pb_p0_ratio
-                flag_draw_fan = True
-                fan_alphas = np.linspace(mu_far, mu_exit, 7)
-        
+            M_array, p_array, viz_data = self._calculate_flow_profile(pb_p0_ratio)
+            flag_draw_oshock = viz_data["flag_draw_oshock"]
+            flag_draw_fan = viz_data["flag_draw_fan"]
+            fan_alphas = viz_data["fan_alphas"]
+            beta = viz_data["beta"]
         except (ValueError, ZeroDivisionError, OverflowError) as e:
             raise ValueError(f"Numerical error in flow calculation: {str(e)}")
         except Exception as e:

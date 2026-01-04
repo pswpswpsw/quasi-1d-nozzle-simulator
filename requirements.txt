@@ -4,4 +4,5 @@ scipy>=1.10.0
 plotly>=5.0.0
 rocketisp>=0.1.11
 matplotlib>=3.7.0
+pytest>=7.0.0
 
