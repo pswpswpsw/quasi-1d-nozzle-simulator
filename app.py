@@ -360,11 +360,11 @@ if 'geometry_type' not in st.session_state:
 # Initialize parabolic geometry parameters
 if 'parabolic_params' not in st.session_state:
     st.session_state.parabolic_params = {
-        'a': 1.5,
+        'a': 0.25,
         'b': 0.6,
         'c': 0.25,
         'xmin': 0.0,
-        'xmax': 1.0
+        'xmax': 1.6
     }
 
 # Initialize flow parameters
@@ -496,11 +496,11 @@ if st.sidebar.button("🔄 Reset to Default", type="secondary"):
         st.session_state.geometry_params = DEFAULT_PRESET.copy()
     else:
         st.session_state.parabolic_params = {
-            'a': 1.5,
+            'a': 0.25,
             'b': 0.6,
             'c': 0.25,
             'xmin': 0.0,
-            'xmax': 1.0
+            'xmax': 1.6
         }
     st.rerun()
 
