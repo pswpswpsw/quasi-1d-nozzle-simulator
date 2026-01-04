@@ -25,3 +25,32 @@ def get_A(G):
     xmax = zL[-1]
     return A, xmin, xmax
 
+
+def get_parabolic_A(a=1.5, b=0.6, c=0.25, xmin=0.0, xmax=1.0):
+    """
+    Create a simple parabolic area profile: A(x) = a*(x-b)^2 + c
+    
+    Parameters:
+    -----------
+    a : float
+        Coefficient for the quadratic term
+    b : float
+        Horizontal shift (throat location)
+    c : float
+        Minimum area (throat area)
+    xmin : float
+        Minimum x coordinate
+    xmax : float
+        Maximum x coordinate
+    
+    Returns:
+    --------
+    A : function
+        Area function A(x)
+    xmin : float
+        Minimum x coordinate
+    xmax : float
+        Maximum x coordinate
+    """
+    A = lambda x: a * (x - b)**2 + c
+    return A, xmin, xmax
