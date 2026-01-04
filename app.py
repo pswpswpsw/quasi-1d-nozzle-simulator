@@ -594,31 +594,13 @@ if validation_errors:
 if (geometry_changed or 'nozzle' not in st.session_state) and not validation_errors:
     try:
         start_time = time.time()
-        # Use SimpleGeometry (works without rocketisp/rocketcea)
-        # Falls back to rocketisp if available for more accurate geometry
-        if USE_ROCKETISP:
-            try:
-                G = RocketispGeometry(
-                    Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
-                    RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
-                    RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
-                    LchmOvrDt=LchmOvrDt
-                )
-            except:
-                # Fallback to SimpleGeometry if rocketisp fails
-                G = SimpleGeometry(
-                    Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
-                    RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
-                    RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
-                    LchmOvrDt=LchmOvrDt
-                )
-        else:
-            G = SimpleGeometry(
-                Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
-                RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
-                RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
-                LchmOvrDt=LchmOvrDt
-            )
+        # SSME Geometry from https://rocketisp.readthedocs.io/en/latest/models.html#geometry
+        G = Geometry(
+            Rthrt=Rthrt, CR=CR, eps=eps, LnozInp=LnozInp,
+            RupThroat=RupThroat, RdwnThroat=RdwnThroat, 
+            RchmConv=RchmConv, cham_conv_deg=cham_conv_deg,
+            LchmOvrDt=LchmOvrDt
+        )
         A, xmin, xmax = get_A(G)
         
         # Default parameters
