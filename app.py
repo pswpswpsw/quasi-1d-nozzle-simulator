@@ -20,20 +20,16 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     
     /* ==========================================================================
-       TYPOGRAPHY SCALE - Organized font sizes using CSS custom properties
-       Only 5 sizes: xs, sm, base, lg, xl
+       TYPOGRAPHY SCALE - Simplified to 2 sizes only
        ========================================================================== */
     :root {
-        --font-xs: 0.75rem;    /* 12px - captions, hints */
-        --font-sm: 0.875rem;   /* 14px - labels, secondary text */
-        --font-base: 1rem;     /* 16px - body text, inputs */
-        --font-lg: 1.125rem;   /* 18px - section headers */
-        --font-xl: 1.5rem;     /* 24px - metric values, titles */
+        --font-base: 1rem;     /* 16px - body text, inputs, labels, values */
+        --font-lg: 1.25rem;    /* 20px - headers, titles */
     }
     
     /* Main app background - modern dark */
     .stApp {
-        background-color: #0f0f0f;
+        background-color: #1a1a1a;
         color: #ececec;
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         font-size: var(--font-base);
@@ -41,7 +37,7 @@ st.markdown("""
     
     /* Main container - wider for plot prominence */
     .main .block-container {
-        background-color: #0f0f0f;
+        background-color: #1a1a1a;
         color: #ececec;
         padding-top: 1.5rem;
         padding-bottom: 2rem;
@@ -81,7 +77,7 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
     
-    h1 { font-size: var(--font-xl); font-weight: 700; }
+    h1 { font-size: var(--font-lg); font-weight: 700; }
     h2 { font-size: var(--font-lg); font-weight: 600; }
     h3 { font-size: var(--font-lg); font-weight: 600; }
     
@@ -146,7 +142,7 @@ st.markdown("""
     
     .stMetric [data-testid="stMetricValue"] {
         color: #06b6d4 !important;
-        font-size: var(--font-xl);
+        font-size: var(--font-lg);
         font-weight: 600;
     }
     
@@ -213,10 +209,10 @@ st.markdown("""
         border-radius: 4px;
     }
     
-    /* Captions - xs size */
+    /* Captions - use base size for readability */
     .stCaption {
         color: #9ca3af !important;
-        font-size: var(--font-xs);
+        font-size: var(--font-base);
     }
     
     /* Markdown text */
@@ -293,6 +289,50 @@ st.markdown("""
     ::-webkit-scrollbar-thumb:hover {
         background: #525252;
     }
+    
+    /* Spinning gear animation for loading state */
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .rotating {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    /* MOBILE OPTIMIZATION */
+    @media (max-width: 768px) {
+        /* Reduce main container padding */
+        .main .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            max-width: 100% !important;
+        }
+        
+        /* Adjust font sizes for mobile to be slightly smaller if needed, 
+           but per user request we keep 2 sizes. We'll just ensure they fit. */
+        
+        /* Ensure Status/Gear indicator doesn't overlap content */
+        /* It is absolutely positioned in plot area, so it should be fine */
+        
+        /* Make plot full width */
+        .stPlotlyChart {
+            width: 100% !important;
+        }
+    }
+    
+    /* Streamlit's running indicator - style as spinning gear */
+    [data-testid="stStatusWidget"] {
+        position: fixed !important;
+        top: 16px !important;
+        right: 16px !important;
+        z-index: 1000 !important;
+    }
+    
+    [data-testid="stStatusWidget"] svg {
+        animation: spin 1s linear infinite;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -337,15 +377,15 @@ if 'R' not in st.session_state:
 # Banner header in sidebar at top
 st.sidebar.markdown("""
     <div style="
-        padding: 12px 0;
+        padding: 4px 0 12px 0;
         border-bottom: 1px solid #2d2d2d;
         margin-bottom: 16px;
-        margin-top: 0 !important;
+        margin-top: -1rem;
     ">
         <h3 style="
             color: #ffffff; 
             margin: 0 0 12px 0;
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
         ">Quasi-1D Nozzle Flow Simulator</h3>
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -353,12 +393,76 @@ st.sidebar.markdown("""
                  alt="Prof. Shaowu Pan"
                  style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid #2d2d2d;">
             <div>
-                <p style="color: #d1d5db; font-size: 0.875rem; margin: 0; font-weight: 500;">Prof. Shaowu Pan</p>
-                <p style="color: #6b7280; font-size: 0.75rem; margin: 0; line-height: 1.4;">MANE, Rensselaer Polytechnic Institute</p>
+                <p style="color: #d1d5db; font-size: 1rem; margin: 0; font-weight: 500;">Prof. Shaowu Pan</p>
+                <p style="color: #6b7280; font-size: 1rem; margin: 0; line-height: 1.4;">MANE, Rensselaer Polytechnic Institute<br>Troy, NY 12180, USA</p>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+# === BACK PRESSURE RATIO CONTROL (moved here, before geometry) ===
+# Use log10 space: from log10(1e-7) = -7 to log10(1) = 0
+log_min = -7.0
+log_max = 0.0
+log_default = np.log10(0.8)
+
+if 'log_p_ratio' not in st.session_state:
+    st.session_state.log_p_ratio = log_default
+
+st.sidebar.markdown("### Back Pressure Ratio")
+
+# Slider with log scale labels
+st.sidebar.markdown("""
+    <div style="display: flex; justify-content: space-between; font-size: 1rem; color: #9ca3af; margin-bottom: -10px;">
+        <span>10⁻⁷</span>
+        <span>1.0</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+log_p_ratio = st.sidebar.slider(
+    r"$p_b/p_0$",
+    min_value=log_min,
+    max_value=log_max,
+    value=float(st.session_state.log_p_ratio),
+    step=0.01,
+    label_visibility="collapsed"
+)
+
+# Convert from log space to linear space
+p_ratio = 10.0 ** log_p_ratio
+st.session_state.log_p_ratio = log_p_ratio
+
+# Display current value prominently
+st.sidebar.markdown(f"""
+    <div style="background-color: #1f1f1f; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #2d2d2d;">
+        <span style="color: #9ca3af; font-size: 1rem;">Current value:</span>
+        <span style="color: #06b6d4; font-size: 1rem; font-weight: 600; margin-left: 8px;">{p_ratio:.6f}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Create placeholder for flow regime (will be populated after nozzle is created)
+flow_regime_placeholder = st.sidebar.empty()
+
+st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+# === FLOW PARAMETERS (moved here, before geometry) ===
+st.sidebar.markdown("### Flow Parameters")
+
+# Gamma (ratio of specific heats) input
+gamma = st.sidebar.number_input(
+    r"$\gamma$ (Ratio of Specific Heats)",
+    min_value=1.1,
+    max_value=1.67,
+    value=float(st.session_state.gamma),
+    step=0.01,
+    help="Ratio of specific heats (cp/cv). Must be > 1."
+)
+st.sidebar.caption("**Typical values:** Air = 1.40 · Monatomic = 1.67 · Combustion = 1.2–1.3")
+
+# Gas constant R is hidden since it doesn't affect M(x) or p/p0(x)
+R = st.session_state.R
+
+st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
 # Geometry parameters section with visual grouping
 st.sidebar.markdown("### Nozzle Geometry")
@@ -399,7 +503,7 @@ if geometry_type == 'SSME':
     # Chamber Geometry Group
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Chamber Geometry</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 1rem; margin: 0 0 8px 0;">Chamber Geometry</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -452,7 +556,7 @@ if geometry_type == 'SSME':
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Throat Region</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 1rem; margin: 0 0 8px 0;">Throat Region</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -478,7 +582,7 @@ if geometry_type == 'SSME':
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Expansion Section</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 1rem; margin: 0 0 8px 0;">Expansion Section</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -530,7 +634,7 @@ if geometry_type == 'SSME':
 else:  # Simple Parabolic geometry
     st.sidebar.markdown("""
         <div class="param-group">
-            <p style="color: #06b6d4; font-weight: 600; font-size: 0.875rem; margin: 0 0 8px 0;">Parabolic Parameters</p>
+            <p style="color: #06b6d4; font-weight: 600; font-size: 1rem; margin: 0 0 8px 0;">Parabolic Parameters</p>
         </div>
         """, unsafe_allow_html=True)
     st.sidebar.latex(r"A(x) = a(x-b)^2 + c")
@@ -701,24 +805,6 @@ else:
     st.warning("Please fix validation errors to continue.")
     st.stop()
 
-# Sidebar for controls
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown("### Flow Parameters")
-
-# Gamma (ratio of specific heats) input
-gamma = st.sidebar.number_input(
-    r"$\gamma$ (Ratio of Specific Heats)",
-    min_value=1.1,
-    max_value=1.67,
-    value=float(st.session_state.gamma),
-    step=0.01,
-    help="Ratio of specific heats (cp/cv). Must be > 1."
-)
-st.sidebar.caption("**Typical values:** Air = 1.40 · Monatomic = 1.67 · Combustion = 1.2–1.3")
-
-# Gas constant R is hidden since it doesn't affect M(x) or p/p0(x)
-# Keep using default value from session state
-R = st.session_state.R
 
 # Check if flow parameters changed and recreate nozzle if needed
 flow_params_changed = (
@@ -763,34 +849,7 @@ if flow_params_changed and 'nozzle' in st.session_state and not validation_error
     except Exception as e:
         st.error(f"Failed to update nozzle with new flow parameters: {str(e)}")
 
-# Pressure ratio slider with log scale for fine control near 0
-# Use log10 space: from log10(1e-7) = -7 to log10(1) = 0
-log_min = -7.0
-log_max = 0.0
-# Default: 0.8 for normal shock in expansion (works for both geometries)
-log_default = np.log10(0.8)
-
-# Initialize session state for log pressure ratio if not exists
-if 'log_p_ratio' not in st.session_state:
-    st.session_state.log_p_ratio = log_default
-
-# Slider in log space (for fine control near 0)
-log_p_ratio = st.sidebar.slider(
-    r"Back Pressure Ratio ($p_b/p_0$)",
-    min_value=log_min,
-    max_value=log_max,
-    value=float(st.session_state.log_p_ratio),
-    step=0.01,
-    help="Pressure ratio from 1e-7 to 1. Uses log scale for fine control near 0."
-)
-
-# Convert from log space to linear space for display and calculations
-p_ratio = 10.0 ** log_p_ratio
-
-# Update session state
-st.session_state.log_p_ratio = log_p_ratio
-
-# Determine flow regime
+# Determine flow regime based on p_ratio (calculated earlier in sidebar)
 if p_ratio > nozzle.crit_p_ratio_1:
     regime = "Subsonic Throat"
     regime_color = "🟢"
@@ -804,41 +863,80 @@ else:
     regime = "Sonic Throat - Expansion Fan at Exit"
     regime_color = "🔵"
 
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
-st.sidebar.markdown(f"""
+# Fill the flow regime placeholder (positioned after back pressure ratio)
+flow_regime_placeholder.markdown(f"""
     <div style="
         background-color: #1f1f1f;
         padding: 14px;
         border-radius: 8px;
-        margin: 8px 0;
+        margin: 12px 0 0 0;
         border: 1px solid #2d2d2d;
     ">
-        <p style="color: #9ca3af; font-size: 0.875rem; margin: 0 0 6px 0;">Flow Regime</p>
+        <p style="color: #9ca3af; font-size: 1rem; margin: 0 0 6px 0;">Flow Regime</p>
         <p style="color: #ffffff; font-size: 1rem; font-weight: 500; margin: 0;">
             {regime_color} {regime}
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-
-# Generate plot using Plotly
-try:
-    start_time = time.time()
-    fig = nozzle.plot_flow_profile_plotly(p_ratio)
-    calc_time = time.time() - start_time
-    st.session_state.flow_calc_time = calc_time
-except Exception as e:
-    st.error(f"Failed to compute flow profile: {str(e)}")
-    st.stop()
-
 # Use wider container for plot
-plot_col1, plot_col2, plot_col3 = st.columns([0.5, 9, 0.5])
-with plot_col2:
-    st.plotly_chart(fig, width='stretch')
+plot_col, plot_spacer = st.columns([9.5, 0.5], gap="small")
 
-# Additional information - single row, wider to accommodate full text
-metric_col1, metric_col2, metric_col3 = st.columns([0.5, 9.0, 0.5])
-with metric_col2:
+with plot_col:
+    # Placeholder for status indicator
+    status_placeholder = st.empty()
+    
+    # Show spinning gear while computing
+    status_placeholder.markdown("""
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 10px;
+            z-index: 100;
+            font-size: 24px;
+            color: #fbbf24;
+            background: rgba(26, 26, 26, 0.9);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+        "><div class="rotating">⚙️</div> Solving...</div>
+    """, unsafe_allow_html=True)
+
+    # Perform calculation
+    try:
+        start_time = time.time()
+        # Small delay to ensure the spinning animation is visible to user
+        time.sleep(0.3) 
+        fig = nozzle.plot_flow_profile_plotly(p_ratio)
+        calc_time = time.time() - start_time
+        st.session_state.flow_calc_time = calc_time
+        
+        # Update status to Ready (static)
+        status_placeholder.markdown("""
+            <div style="
+                position: absolute;
+                top: 0;
+                left: 10px;
+                z-index: 100;
+                font-size: 24px;
+                color: #06b6d4;
+                background: rgba(26, 26, 26, 0.9);
+                padding: 8px 12px;
+                border-radius: 8px;
+                border: 1px solid #2d2d2d;
+            ">⚙️ Ready</div>
+        """, unsafe_allow_html=True)
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+    except Exception as e:
+        status_placeholder.empty()
+        st.error(f"Failed to compute flow profile: {str(e)}")
+        st.stop()
+
+# Additional information - single row
+metric_col, metric_spacer = st.columns([9.5, 0.5], gap="small")
+with metric_col:
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric(r"$p_b/p_0$", f"{p_ratio:.4f}")

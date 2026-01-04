@@ -80,9 +80,11 @@ class Nozzle(object):
 
         flag_draw_oshock = False 
         flag_draw_fan = False
+        flag_draw_nshock = False  # Normal shock inside nozzle
         fan_alphas = None
         beta = None
         x_extended = None
+        x_shock = None  # Location of normal shock
 
         if pb_p0_ratio > self.crit_p_ratio_1:
             # Subsonic throat
@@ -148,6 +150,7 @@ class Nozzle(object):
                 rtol=1e-7,
             ).root
             M_array, p_array = M_and_p_given_x_shock(x_shock)
+            flag_draw_nshock = True  # Mark for drawing normal shock
 
         elif pb_p0_ratio > self.crit_p_ratio_3:
             # Sonic throat - oblique shock at exit
@@ -271,6 +274,8 @@ class Nozzle(object):
         viz_data = {
             "flag_draw_oshock": flag_draw_oshock,
             "flag_draw_fan": flag_draw_fan,
+            "flag_draw_nshock": flag_draw_nshock,
+            "x_shock": x_shock,
             "fan_alphas": fan_alphas,
             "beta": beta,
             "x_extended": x_extended,
@@ -369,6 +374,8 @@ class Nozzle(object):
             M_array, p_array, viz_data = self._calculate_flow_profile(pb_p0_ratio)
             flag_draw_oshock = viz_data["flag_draw_oshock"]
             flag_draw_fan = viz_data["flag_draw_fan"]
+            flag_draw_nshock = viz_data["flag_draw_nshock"]
+            x_shock = viz_data["x_shock"]
             fan_alphas = viz_data["fan_alphas"]
             beta = viz_data["beta"]
         except (ValueError, ZeroDivisionError, OverflowError) as e:
@@ -402,7 +409,7 @@ class Nozzle(object):
             go.Scatter(
                 x=self.xeval, 
                 y=M_array, 
-                name='M(x)', 
+                name='Mach Number', 
                 line=dict(color='#0072B2', width=4),  # Nature blue, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_M,
@@ -414,7 +421,7 @@ class Nozzle(object):
             go.Scatter(
                 x=self.xeval, 
                 y=p_array, 
-                name='p/p₀(x)', 
+                name='Pressure Ratio (p/p₀)', 
                 line=dict(color='#E69F00', width=3.5, dash='dash'),  # Nature orange, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_p,
@@ -428,7 +435,7 @@ class Nozzle(object):
             go.Scatter(
                 x=self.x, 
                 y=radius_array, 
-                name='r(x)', 
+                name='Nozzle Radius', 
                 line=dict(color='#999999', width=3.5),  # Nature gray, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_r,
@@ -490,6 +497,20 @@ class Nozzle(object):
                     secondary_y=True,
                 )
         
+        # Normal shock annotation below x-axis with arrow
+        shock_annotation = None
+        if flag_draw_nshock and x_shock is not None:
+            shock_annotation = dict(
+                x=x_shock,
+                y=-0.15,  # Below x-axis
+                yref='paper',
+                text='↑ Shockwave',
+                showarrow=False,
+                font=dict(size=14, color='#CC79A7'),
+                xanchor='center',
+                yanchor='top'
+            )
+        
         # Auto-adjust axis limits based on data
         M_max = np.max(M_array)
         M_min = np.min(M_array)
@@ -516,7 +537,7 @@ class Nozzle(object):
         fig.update_xaxes(
             title_text="x (Axial Position)",
             title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
-            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
+            tickfont=dict(color='#d1d5db', size=16),  # Increased tick label font size
             showgrid=True, 
             gridcolor='rgba(156,163,175,0.12)',  # Reduced opacity (12%)
             gridwidth=1,
@@ -528,7 +549,7 @@ class Nozzle(object):
         fig.update_yaxes(
             title_text="M(x), p/p₀(x)",
             title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
-            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
+            tickfont=dict(color='#d1d5db', size=16),  # Increased tick label font size
             secondary_y=False, 
             range=[y_min, y_max], 
             showgrid=True, 
@@ -541,7 +562,7 @@ class Nozzle(object):
         fig.update_yaxes(
             title_text="r(x) (Radius)",
             title_font=dict(size=18, color='#ffffff', family='Inter, sans-serif'),  # Increased font size
-            tickfont=dict(color='#d1d5db', size=14),  # Increased tick label font size
+            tickfont=dict(color='#d1d5db', size=16),  # Increased tick label font size
             secondary_y=True, 
             range=[0, max(radius_array)*1.1], 
             showgrid=False,
@@ -551,25 +572,26 @@ class Nozzle(object):
         
         # Update layout for modern dark theme - legend inside plot
         fig.update_layout(
-            plot_bgcolor='#0f0f0f',  # Darker background
-            paper_bgcolor='#0f0f0f',
+            plot_bgcolor='rgba(26, 26, 26, 0.85)',  # Semi-transparent for modern look
+            paper_bgcolor='rgba(26, 26, 26, 0.85)',
             font=dict(color='#ececec', size=16, family='Inter, sans-serif'),  # Increased font size
             legend=dict(
-                orientation="v",
-                yanchor="top",
-                y=0.98,
-                xanchor="right",
-                x=0.98,  # Inside plot, top-right
-                font=dict(color='#ececec', size=14),  # Increased font size
-                bgcolor='rgba(15,15,15,0.85)',  # Semi-transparent dark background
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="center",
+                x=0.5,
+                font=dict(color='#ececec', size=14),
+                bgcolor='rgba(15,15,15,0.85)',
                 bordercolor='rgba(156,163,175,0.3)',
                 borderwidth=1,
-                itemclick="toggleothers",  # Click to toggle other traces
-                itemdoubleclick="toggle"  # Double-click to toggle this trace
+                itemclick="toggleothers",
+                itemdoubleclick="toggle"
             ),
-            height=550,
+            height=650,
             width=None,
-            margin=dict(l=70, r=70, t=50, b=60),
+            margin=dict(l=70, r=70, t=50, b=80),  # Increased bottom margin for annotation
+            annotations=[shock_annotation] if shock_annotation else [],
             hovermode='x unified',  # Unified hover for better tooltip display
             hoverlabel=dict(
                 bgcolor='rgba(15,15,15,0.95)',
