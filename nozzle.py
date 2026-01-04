@@ -439,7 +439,9 @@ class Nozzle(object):
                 line=dict(color='#999999', width=3.5),  # Nature gray, thicker line
                 hovertemplate='<b>%{text}</b><extra></extra>',
                 text=hover_text_r,
-                mode='lines'
+                mode='lines',
+                fill='tozeroy',
+                fillcolor='rgba(153, 153, 153, 0.1)'  # Light shaded area under geometry
             ),
             secondary_y=True,
         )
