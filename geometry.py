@@ -24,4 +24,3 @@ def get_A(G):
     xmin = zL[0]
     xmax = zL[-1]
     return A, xmin, xmax
-
