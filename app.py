@@ -178,10 +178,21 @@ st.markdown("""
         transition: all 0.2s ease;
     }
     
+    
     .stButton > button:hover {
         background-color: #2d2d2d;
         border-color: #06b6d4;
         color: #06b6d4;
+    }
+    
+    /* Center align buttons in columns (for increment controls) */
+    div[data-testid="stColumn"] button {
+        justify-content: center;
+        text-align: center;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        display: flex;
+        width: 100%;
     }
     
     /* Info boxes */
@@ -432,18 +443,38 @@ st.sidebar.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-log_p_ratio = st.sidebar.slider(
-    r"$p_b/p_0$",
-    min_value=log_min,
-    max_value=log_max,
-    value=float(st.session_state.log_p_ratio),
-    step=0.01,
-    label_visibility="collapsed"
-)
+# Definition of callbacks for increment/decrement
+def decrement_p_ratio():
+    st.session_state.log_p_ratio = max(log_min, st.session_state.log_p_ratio - 0.0025)
 
-# Convert from log space to linear space
+def increment_p_ratio():
+    st.session_state.log_p_ratio = min(log_max, st.session_state.log_p_ratio + 0.0025)
+
+# Layout for integrated buttons and slider
+col_minus, col_slider, col_plus = st.sidebar.columns([1, 6, 1])
+
+with col_minus:
+    # Use a container to vertically align if needed, or just button
+    st.markdown('<div style="margin-top: 5px;"></div>', unsafe_allow_html=True) # visual alignment hacking might be needed or just plain button
+    st.button("➖", key="btn_dec", on_click=decrement_p_ratio, help="Decrease by 0.0025")
+
+with col_slider:
+    st.slider(
+        r"$p_b/p_0$",
+        min_value=log_min,
+        max_value=log_max,
+        key="log_p_ratio", # Syncs directly with session state
+        step=0.0025,
+        label_visibility="collapsed"
+    )
+
+with col_plus:
+    st.markdown('<div style="margin-top: 5px;"></div>', unsafe_allow_html=True)
+    st.button("➕", key="btn_inc", on_click=increment_p_ratio, help="Increase by 0.0025")
+
+# Get value from session state
+log_p_ratio = st.session_state.log_p_ratio
 p_ratio = 10.0 ** log_p_ratio
-st.session_state.log_p_ratio = log_p_ratio
 
 # Display current value prominently
 st.sidebar.markdown(f"""
@@ -948,14 +979,12 @@ with plot_col:
         st.stop()
 
 # Additional information - single row
-metric_col, metric_spacer = st.columns([9.5, 0.5], gap="small")
-with metric_col:
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(r"$p_b/p_0$", f"{p_ratio:.4f}")
-    with col2:
-        st.metric(r"$(p_b/p_0)_1$ (Choked)", f"{nozzle.crit_p_ratio_1:.4f}")
-    with col3:
-        st.metric(r"$(p_b/p_0)_2$ (Normal Shock at Exit)", f"{nozzle.crit_p_ratio_2:.4f}")
-    with col4:
-        st.metric(r"$(p_b/p_0)_3$ (Shock Free)", f"{nozzle.crit_p_ratio_3:.4f}")
+# Additional information - single row
+st.markdown("### Critical Pressure Ratios")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Subsonic Limit", f"{nozzle.crit_p_ratio_1:.4f}", help="Choking limit: Flow becomes supersonic after throat")
+with col2:
+    st.metric("Normal Shock @ Exit", f"{nozzle.crit_p_ratio_2:.4f}", help="Normal shock exactly at nozzle exit plane")
+with col3:
+    st.metric("Design Condition", f"{nozzle.crit_p_ratio_3:.4f}", help="Isentropic expansion to exit pressure (Shock-Free)")
