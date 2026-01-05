@@ -2,6 +2,8 @@
 
 A modern, interactive web application for simulating compressible flow through rocket nozzles using quasi-1D flow theory.
 
+![Demo Animation](demo.gif)
+
 ## 🚀 Features
 
 - **Interactive Flow Visualization**: Real-time Mach number and pressure ratio profiles with hover tooltips
