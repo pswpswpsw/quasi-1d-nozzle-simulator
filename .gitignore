@@ -45,3 +45,8 @@ venv.bak/
 
 # Jupyter
 .ipynb_checkpoints
+
+# Deployment Exclusions
+.cursorrules
+test_app.py
+.devcontainer/
